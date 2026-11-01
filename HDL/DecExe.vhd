@@ -1,0 +1,93 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity DecExe is
+    generic (
+        REG_WIDTH : integer := 32; 
+        NUM_REGS  : integer := 5
+    );
+    port (
+        clk       : in  std_logic;
+        nRst      : in  std_logic;
+        instr     : in  std_logic_vector(REG_WIDTH - 1 downto 0);
+        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)
+    );
+end entity DecExe;
+
+architecture rtl of DecExe is
+    -- Read port 1
+    signal rs1 : std_logic_vector(NUM_REGS - 1 downto 0);
+    signal rdata1 : std_logic_vector(REG_WIDTH - 1 downto 0);
+    -- Read port 2
+    signal rs2 : std_logic_vector(NUM_REGS - 1 downto 0);
+    signal rdata2 : std_logic_vector(REG_WIDTH - 1 downto 0);
+    -- Write port
+    signal waddr  : std_logic_vector(NUM_REGS - 1 downto 0);
+    signal wreg   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
+    signal we     : std_logic; -- Write enable
+    signal wb     : std_logic; -- Write back from memory
+    signal rd     : std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back 
+    -- Signal decoder instruction
+    signal opcode    :  std_logic_vector(6 downto 0);
+    signal funct3    :  std_logic_vector(2 downto 0);
+    signal funct7    :  std_logic_vector(6 downto 0);
+    signal imm       :  std_logic_vector(REG_WIDTH - 1 downto 0);
+
+begin
+    U0: entity work.regFile(rtl)
+    generic map(
+        REG_WIDTH => REG_WIDTH,
+        NUM_REGS  => NUM_REGS
+    )
+    port map(
+        clk       => clk,
+        nRst      => nRst,
+        raddr1    => rs1,
+        rdata1    => rdata1,
+        raddr2    => rs2,
+        rdata2    => rdata2,
+        waddr     => waddr,
+        wreg      => wreg,
+        we        => we,
+        wb        => wb,
+        rd        => rd,
+        wdata     => wdata
+    );
+
+    -- DECODER
+    U1: entity work.decoder(rtl)
+    generic map(
+        REG_WIDTH => REG_WIDTH,
+        NUM_REGS  => NUM_REGS
+    )
+    port map(
+        clk       => clk,
+        nRst      => nRst,
+        instr     => instr,
+        opcode    => opcode,
+        rs1       => rs1,
+        rs2       => rs2,
+        rd        => rd,
+        funct3    => funct3,
+        funct7    => funct7,
+        imm       => imm
+    );
+    
+    -- ALU
+    U2: entity work.alu(rtl)
+    generic map(
+      REG_WIDTH => REG_WIDTH,
+      NUM_REGS  => NUM_REGS
+    )
+    port map(
+      op1 => rs1,
+      op2 => rs2,
+      aloup => aloup,
+      eq => eq,
+      lt => lt,
+      ltu => ltu,
+      aluOut => aluOut
+    );
+
+end architecture rtl;
