@@ -4,76 +4,99 @@ use ieee.numeric_std.all;  -- define el tipo signed y unsigned
 
 entity alu is
   generic (
-    ALU_LENGTH : integer := 5;
-    NUM_REGS  : integer := 5;
-    ALU_DECOD : integer := 5
+    ALU_LENGTH : integer := 32;
+    ALU_DECOD  : integer := 5
   );
   port(
-    op1    : in std_logic_vector(ALU_LENGTH-1 downto 0);
-    op2    : in std_logic_vector(ALU_LENGTH-1 downto 0);  -- Puede valer imm o rs2, se gestiona en el decoder
-    aloup  : in std_logic_vector(ALU_DECOD-1 downto 0);
-    eq     : in std_logic;
-    lt     : in std_logic;
-    ltu    : in std_logic;
-    aluOut : in std_logic_vector(ALU_LENGTH-1 downto 0)
+    op1      : in std_logic_vector(ALU_LENGTH-1 downto 0);
+    op2      : in std_logic_vector(ALU_LENGTH-1 downto 0);  -- Puede valer imm o rs2, se gestiona en el decoder
+    aloup    : in std_logic_vector(ALU_DECOD-1 downto 0);
+    eq       : out std_logic;
+    lt       : out std_logic;
+    ltu      : out std_logic;
+    --overflow : out std_logic;
+    aluOut   : out std_logic_vector(ALU_LENGTH-1 downto 0)
   );
 end entity;
 
 architecture rtl of alu is
-   signal auxAlu : std_logic_vector(ALU_LENGTH downto 0);
-   signal desp: integer range 0 to REG_WIDTH - 1;
-
 begin
 
-   op1_s := signed(op1);
-   op2_s := signed(op2);
-   op1_u := unsigned(op1);
-   op2_u := unsigned(op2);
-
-   desp := to_integer(unsigned(op2(NUM_REGS - 1 downto 0)));
-
-   -- 3 ibit para funct3 y 1 LSB para funct7
-   auxAlu <= ('0' & op1) + ('0' & op2)                      when aloup = "0000" else -- add   (R, funct3=0x0, funct7=0x00)
-             op1_u - (not op2_u)                            when aloup = "0001" else -- sub   (R, funct3=0x0, funct7=0x20)
-             op1 xor op2                                    when aloup = "1000" else -- xor   (R, funct3=0x4, funct7=0x00)
-             op1 or  op2                                    when aloup = "1100" else -- or    (R, funct3=0x6, funct7=0x00)
-             op1 and op2                                    when aloup = "1110" else -- and   (R, funct3=0x7, funct7=0x00)
-             std_logic_vector(shift_left(op1_u, desp))      when alu_op = "0010" else -- sll   (R, funct3=0x1, funct7=0x00)
-             std_logic_vector(shift_right(op1_u, desp))     when alu_op = "1010" else -- srl   (R, funct3=0x5, funct7=0x00)
-             std_logic_vector(shift_right(op1_s, desp))     when alu_op = "1011" else -- sra   (R, funct3=0x5, funct7=0x20)
-             (0 => '1', others => '0')                      when (aloup = "0100" and op1_s < op2_s) else -- slt   (R, funct3=0x2, funct7=0x00)
-             (others => '0')                                when aloup = "0100" else
-             (0 => '1', others => '0')                      when (aloup = "0110" and op1_u < op2_u) else -- slt   (R, funct3=0x2, funct7=0x00)
-             (others => '0')                                when aloup = "0110" else
-             (others => '0');
-
-  process(clk, nRst)
+  process(op1, op2, aloup)
+    variable desp: integer range 0 to 31;
+    
   begin
-    if nRst = '0' then
-      aluOut <= (others => '0');
+    
+    -- Un desplazamiento de más bits es innecesario, perderiamos todos los bits de op1
+    desp := to_integer(unsigned(op2(4 downto 0)));  
+    
+    case aloup is
+      -- 0000: Suma signed
+      when "0000" => 
+        aluOut <= (signed(op1)) + (signed(op2));
+        --overflow <= (op1(31) and op2(31) and (not auxAlu(31))) and ((not op1(31)) and (not op2(31)) and auxAlu(31));
 
-    elsif clk'event and clk = '1' then
-      aluOut <= auxAlu(5 downto 0);
+      -- 1000: Resta Signed
+      when "1000" => 
+        aluOut <= (signed(op1)) - (signed(op2));
 
-      if auxAlu == 0 then
-        eq <= '1';
-      else 
-        eq <= '0';
-      end if;
+      -- 0001: Shift Left Logical (sll) 
+      when "0001" => 
+        aluOut <= shift_left(unsigned(op1), desp);
 
-      if auxAlu < 0 then
-        lt <= '1';
-      else 
-        lt <= '0';
-      end if;
+      -- 0010: Set Less Than (slt)
+      when "0010" => 
+        if signed(op1) < signed(op2) then
+          aluOut <= (31 downto 1 => '0') & '1';
+        else 
+          aluOut <= (others => '0');
+        end if;
 
-      if op1 < op2 then
-        ltu <= '1';
-      else
-        ltu <= '0';
-      end if;
-    end if;
+      -- 0011: Set Less Than Unsigned (sltu)
+      when "0011" => 
+        if unsigned(op1) < unsigned(op2) then
+          aluOut <= (31 downto 1 => '0') & '1';
+        else 
+          aluOut <= (others => '0');
+        end if;
+
+      -- 0100: XOR (xor)
+      when "0100" => 
+        aluOut <= op1 xor op2;
+      
+      -- 0101: Shift Right Logical (srl)
+      when "0101" => 
+        aluOut <= shift_right(unsigned(op1), desp);
+
+      -- 1101: Shift Right Arith (sra) - msb extends
+      when "1101" => 
+        aluOut <= shift_right(signed(op1), desp);
+
+      -- 0110: OR (or)
+      when "0110" => 
+        aluOut <= op1 or op2;
+
+      -- 0111: AND (and)
+      when "0111" => 
+        aluOut <= op1 and op2;
+
+      when others => 
+        aluOut <= (others => '0');
+
+    end case;
   end process;
+
+  -- SEÑALES PARA IMPLEMENTAR las INSTRUCCIONES de salto condicional: beq, bne, blt, bge, bltu, bgeu
+
+  eq <= '1' when op1 = op2 else
+        '0';
+
+  lt <= '1' when signed(op1) < signed(op2) else
+        '0';
+
+  ltu <= '1' when unsigned(op1) < unsigned(op2) else
+         '0';
+
 
 end rtl;
   
