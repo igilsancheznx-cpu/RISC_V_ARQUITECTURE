@@ -24,7 +24,7 @@ architecture rtl of DecExe is
     signal rdata2 : std_logic_vector(REG_WIDTH - 1 downto 0);
     -- Write port
     signal waddr  : std_logic_vector(NUM_REGS - 1 downto 0);
-    signal wreg   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
+    signal wAlu   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
     signal we     : std_logic; -- Write enable
     signal wb     : std_logic; -- Write back from memory
     signal rd     : std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back 
@@ -48,7 +48,7 @@ begin
         raddr2    => rs2,
         rdata2    => rdata2,
         waddr     => waddr,
-        wreg      => wreg,
+        wreg      => wAlu,
         we        => we,
         wb        => wb,
         rd        => rd,
@@ -77,17 +77,17 @@ begin
     -- ALU
     U2: entity work.alu(rtl)
     generic map(
-      REG_WIDTH => REG_WIDTH,
-      NUM_REGS  => NUM_REGS
+      ALU_LENGTH => REG_WIDTH,
+      ALU_DECOD  => NUM_REGS
     )
     port map(
-      op1 => rs1,
-      op2 => rs2,
+      op1 => rdata1,
+      op2 => rdata2,
       aloup => aloup,
       eq => eq,
       lt => lt,
       ltu => ltu,
-      aluOut => aluOut
+      aluOut => wAlu
     );
 
 end architecture rtl;

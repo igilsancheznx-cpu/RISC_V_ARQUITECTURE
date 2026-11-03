@@ -63,10 +63,10 @@ begin
        NUM_REGS  => ADDR_REG 
     )
     port map(
-        clk       => clk,
-        nRst      => nRst,
-        instr     => rdata_a,
-        wdata     => rdata_b   
+       clk       => clk,
+       nRst      => nRst,
+       instr     => rdata_a,
+       wdata     => rdata_b   
     );
 
 end estructural;
