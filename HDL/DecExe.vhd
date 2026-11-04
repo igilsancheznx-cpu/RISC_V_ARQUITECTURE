@@ -27,11 +27,8 @@ architecture rtl of DecExe is
     signal wAlu   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
     signal we     : std_logic; -- Write enable
     signal wb     : std_logic; -- Write back from memory
-    signal rd     : std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back 
+    signal rd     : std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back  ELIMINAR RD o waddr Unificar !!!
     -- Signal decoder instruction
-    signal opcode    :  std_logic_vector(6 downto 0);
-    signal funct3    :  std_logic_vector(2 downto 0);
-    signal funct7    :  std_logic_vector(6 downto 0);
     signal imm       :  std_logic_vector(REG_WIDTH - 1 downto 0);
 
 begin
@@ -47,8 +44,7 @@ begin
         rdata1    => rdata1,
         raddr2    => rs2,
         rdata2    => rdata2,
-        waddr     => waddr,
-        wreg      => wAlu,
+        waddr     => rd,
         we        => we,
         wb        => wb,
         rd        => rd,
@@ -65,14 +61,14 @@ begin
         clk       => clk,
         nRst      => nRst,
         instr     => instr,
-        opcode    => opcode,
+        aloup     => aloup,
         rs1       => rs1,
         rs2       => rs2,
         rd        => rd,
-        funct3    => funct3,
-        funct7    => funct7,
         imm       => imm
     );
+
+    -- Diseñar un multiplexor para elegir imm o rdata2 depende de la aloup (INSTR I)
     
     -- ALU
     U2: entity work.alu(rtl)

@@ -22,8 +22,7 @@ entity regFile is
         waddr     : in  std_logic_vector(NUM_REGS - 1 downto 0);
         wreg      : in  std_logic_vector(REG_WIDTH - 1 downto 0);
         we        : in  std_logic; -- Write enable
-        wb        : in  std_logic; -- Write back from memory
-        rd        : in  std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back  
+        wb        : in  std_logic; -- Write back from memory 
         wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)
     );
 end entity regFile;
@@ -34,29 +33,34 @@ architecture rtl of regFile is
     signal regs : reg_array := (others => (others => '0'));
 begin
 
-    -- Lectura asíncrona: El registro 0 SIEMPRE devuelve 0
-    rdata1 <= (others => '0') when unsigned(raddr1) = 0 else regs(to_integer(unsigned(raddr1)));
-    rdata2 <= (others => '0') when unsigned(raddr2) = 0 else regs(to_integer(unsigned(raddr2)));
+    -- Lectura asincrona: El registro 0 SIEMPRE devuelve 0
+    rdata1 <= (others => '0') when unsigned(raddr1) = 0 else 
+              regs(to_integer(unsigned(raddr1)));
+    rdata2 <= (others => '0') when unsigned(raddr2) = 0 else
+              regs(to_integer(unsigned(raddr2)));
 
-    -- Escritura síncrona
+    -- Escritura sincrona
     process(clk, nRst)
-        variable widx_exe : integer;
+        variable waddraddr_d : integer;
         variable widx_wb  : integer;
     begin
         if nRst = '0' then
             regs <= (others => (others => '0'));
         elsif rising_edge(clk) then
-            widx_exe := to_integer(unsigned(waddr));
-            widx_wb  := to_integer(unsigned(rd));
+            waddr_d := to_integer(unsigned(waddr));
 
             -- Escritura desde etapa Execution (evitando escribir en x0)
-            if we = '1' and widx_exe /= 0 then
-                regs(widx_exe) <= wreg;
-            end if;
-
-            -- Escritura independiente desde Write-Back (evitando escribir en x0)
-            if wb = '1' and widx_wb /= 0 then
-                regs(widx_wb) <= wdata;
+            if  = 0 then
+              if we = '1' then
+                  regs(waddr_d) <= wreg;
+              end if;
+  
+              -- Escritura independiente desde Write-Back (evitando escribir en x0)
+              if wb = '1' then
+                  regs(waddr_d) <= wdata;
+              end if;
+            else
+              regs(waddr_d) <= (others => '0');
             end if;
         end if;
     end process;
