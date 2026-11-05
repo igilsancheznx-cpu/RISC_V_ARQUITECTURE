@@ -1,0 +1,102 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;  -- define el tipo signed y unsigned
+
+entity alu is
+  generic (
+    ALU_LENGTH : integer := 32;
+    ALU_DECOD  : integer := 4
+  );
+  port(
+    op1      : in std_logic_vector(ALU_LENGTH-1 downto 0);
+    op2      : in std_logic_vector(ALU_LENGTH-1 downto 0);  -- Puede valer imm o rs2, se gestiona en el decoder
+    aloup    : in std_logic_vector(ALU_DECOD-1 downto 0);
+    eq       : out std_logic;
+    lt       : out std_logic;
+    ltu      : out std_logic;
+    --overflow : out std_logic;
+    aluOut   : out std_logic_vector(ALU_LENGTH-1 downto 0)
+  );
+end entity;
+
+architecture rtl of alu is
+begin
+
+  process(aloup, op1, op2)
+    variable desp: integer range 0 to 31;
+    
+  begin
+    
+    -- Un desplazamiento de mas bits es innecesario, perderiamos todos los bits de op1
+    desp := to_integer(unsigned(op2(4 downto 0)));  
+    
+    case aloup is
+      -- 0000: Suma signed
+      when "0000" => 
+        aluOut <= std_logic_vector((signed(op1)) + (signed(op2)));
+        --overflow <= (op1(31) and op2(31) and (not auxAlu(31))) and ((not op1(31)) and (not op2(31)) and auxAlu(31));
+
+      -- 1000: Resta Signed
+      when "1000" => 
+        aluOut <= std_logic_vector((signed(op1)) - (signed(op2)));
+
+      -- 0001: Shift Left Logical (sll) 
+      when "0001" => 
+        aluOut <= std_logic_vector(shift_left(unsigned(op1), desp));
+
+      -- 0010: Set Less Than (slt)
+      when "0010" => 
+        if signed(op1) < signed(op2) then
+          aluOut <= (31 downto 1 => '0') & '1';
+        else 
+          aluOut <= (others => '0');
+        end if;
+
+      -- 0011: Set Less Than Unsigned (sltu)
+      when "0011" => 
+        if unsigned(op1) < unsigned(op2) then
+          aluOut <= (31 downto 1 => '0') & '1';
+        else 
+          aluOut <= (others => '0');
+        end if;
+
+      -- 0100: XOR (xor)
+      when "0100" => 
+        aluOut <= op1 xor op2;
+      
+      -- 0101: Shift Right Logical (srl)
+      when "0101" => 
+        aluOut <= std_logic_vector(shift_right(unsigned(op1), desp));
+
+      -- 1101: Shift Right Arith (sra) - msb extends
+      when "1101" => 
+        aluOut <= std_logic_vector(shift_right(signed(op1), desp));
+
+      -- 0110: OR (or)
+      when "0110" => 
+        aluOut <= op1 or op2;
+
+      -- 0111: AND (and)
+      when "0111" => 
+        aluOut <= op1 and op2;
+
+      when others => 
+        aluOut <= (others => '0');
+
+    end case;
+  end process;
+
+  -- SEÑALES PARA IMPLEMENTAR las INSTRUCCIONES de salto condicional: beq, bne, blt, bge, bltu, bgeu
+
+  eq <= '1' when op1 = op2 else
+        '0';
+
+  lt <= '1' when signed(op1) < signed(op2) else
+        '0';
+
+  ltu <= '1' when unsigned(op1) < unsigned(op2) else
+         '0';
+
+
+end rtl;
+  

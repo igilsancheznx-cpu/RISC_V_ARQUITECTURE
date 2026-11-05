@@ -20,10 +20,10 @@ entity regFile is
         rdata2    : out std_logic_vector(REG_WIDTH - 1 downto 0);
         -- Write port
         waddr     : in  std_logic_vector(NUM_REGS - 1 downto 0);
-        wreg      : in  std_logic_vector(REG_WIDTH - 1 downto 0);
+        wreg      : in  std_logic_vector(REG_WIDTH - 1 downto 0); -- Write from ALU
         we        : in  std_logic; -- Write enable
         wb        : in  std_logic; -- Write back from memory 
-        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)
+        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
     );
 end entity regFile;
 
@@ -41,8 +41,8 @@ begin
 
     -- Escritura sincrona
     process(clk, nRst)
-        variable waddraddr_d : integer;
-        variable widx_wb  : integer;
+        variable waddr_d : integer;
+        variable widx_wb : integer;
     begin
         if nRst = '0' then
             regs <= (others => (others => '0'));
@@ -50,7 +50,7 @@ begin
             waddr_d := to_integer(unsigned(waddr));
 
             -- Escritura desde etapa Execution (evitando escribir en x0)
-            if  = 0 then
+            if waddr_d /= 0 then
               if we = '1' then
                   regs(waddr_d) <= wreg;
               end if;

@@ -23,13 +23,16 @@ architecture rtl of DecExe is
     signal rs2 : std_logic_vector(NUM_REGS - 1 downto 0);
     signal rdata2 : std_logic_vector(REG_WIDTH - 1 downto 0);
     -- Write port
-    signal waddr  : std_logic_vector(NUM_REGS - 1 downto 0);
     signal wAlu   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
     signal we     : std_logic; -- Write enable
     signal wb     : std_logic; -- Write back from memory
     signal rd     : std_logic_vector(NUM_REGS - 1 downto 0); -- Register to write back  ELIMINAR RD o waddr Unificar !!!
     -- Signal decoder instruction
-    signal imm       :  std_logic_vector(REG_WIDTH - 1 downto 0);
+    signal imm    : std_logic_vector(REG_WIDTH - 1 downto 0);
+    signal aloup  : std_logic_vector(3 downto 0);
+    signal eq     : std_logic;
+    signal lt     : std_logic;
+    signal ltu    : std_logic;
 
 begin
     U0: entity work.regFile(rtl)
@@ -47,7 +50,7 @@ begin
         waddr     => rd,
         we        => we,
         wb        => wb,
-        rd        => rd,
+        wreg      => wAlu,
         wdata     => wdata
     );
 

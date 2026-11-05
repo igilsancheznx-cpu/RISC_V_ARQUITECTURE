@@ -1,0 +1,119 @@
+C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd {2 {vcom -work work -2008 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity alu
+-- Compiling architecture rtl of alu
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd(50): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd(58): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd(1): (vcom-1491) Empty source files.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\regFile.vhd}
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity regFile
+-- Compiling architecture rtl of regFile
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\DecExe.vhd}
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity DecExe
+-- Compiling architecture rtl of DecExe
+-- Loading entity regFile
+-- Loading entity decoder
+-- Loading entity alu
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd(1): (vcom-1491) Empty source files.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity disvision
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(16): (vcom-1576) Invalid ';' before ')'.
+** Note: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(16): VHDL Compiler exiting
+
+} {8.0 9.0} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd(1): (vcom-1491) Empty source files.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd {2 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity memory
+-- Compiling architecture rtl of memory
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd(48): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity fetch
+-- Compiling architecture rtl of fetch
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd(2): (vcom-1491) Empty source files.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity decoder
+-- Compiling architecture rtl of decoder
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv {0 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_alu
+** Error: (vlog-13069) C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv(49): near "me00001": syntax error, unexpected IDENTIFIER, expecting ';'.
+
+} {4.0 5.0} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_top
+
+Top level modules:
+	tb_top
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\core.vhd}
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity core
+-- Compiling architecture estructural of core
+-- Loading entity fetch
+-- Loading entity DecExe
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd(1): (vcom-1491) Empty source files.
+
+} {} {}}

@@ -5,7 +5,7 @@ use ieee.numeric_std.all;  -- define el tipo signed y unsigned
 entity alu is
   generic (
     ALU_LENGTH : integer := 32;
-    ALU_DECOD  : integer := 5
+    ALU_DECOD  : integer := 4
   );
   port(
     op1      : in std_logic_vector(ALU_LENGTH-1 downto 0);
@@ -22,32 +22,32 @@ end entity;
 architecture rtl of alu is
 begin
 
-  process(op1, op2, aloup)
+  process(aloup, op1, op2)
     variable desp: integer range 0 to 31;
     
   begin
     
-    -- Un desplazamiento de más bits es innecesario, perderiamos todos los bits de op1
+    -- Un desplazamiento de mas bits es innecesario, perderiamos todos los bits de op1
     desp := to_integer(unsigned(op2(4 downto 0)));  
     
     case aloup is
       -- 0000: Suma signed
       when "0000" => 
-        aluOut <= (signed(op1)) + (signed(op2));
+        aluOut <= std_logic_vector((signed(op1)) + (signed(op2)));
         --overflow <= (op1(31) and op2(31) and (not auxAlu(31))) and ((not op1(31)) and (not op2(31)) and auxAlu(31));
 
       -- 1000: Resta Signed
       when "1000" => 
-        aluOut <= (signed(op1)) - (signed(op2));
+        aluOut <= std_logic_vector((signed(op1)) - (signed(op2)));
 
       -- 0001: Shift Left Logical (sll) 
       when "0001" => 
-        aluOut <= shift_left(unsigned(op1), desp);
+        aluOut <= std_logic_vector(shift_left(unsigned(op1), desp));
 
       -- 0010: Set Less Than (slt)
       when "0010" => 
         if signed(op1) < signed(op2) then
-          aluOut <= (31 downto 1 => '0') & '1';
+          aluOut <= (0 => '1', others => '0');
         else 
           aluOut <= (others => '0');
         end if;
@@ -55,7 +55,7 @@ begin
       -- 0011: Set Less Than Unsigned (sltu)
       when "0011" => 
         if unsigned(op1) < unsigned(op2) then
-          aluOut <= (31 downto 1 => '0') & '1';
+          aluOut <= (0 => '1', others => '0');
         else 
           aluOut <= (others => '0');
         end if;
@@ -66,11 +66,11 @@ begin
       
       -- 0101: Shift Right Logical (srl)
       when "0101" => 
-        aluOut <= shift_right(unsigned(op1), desp);
+        aluOut <= std_logic_vector(shift_right(unsigned(op1), desp));
 
       -- 1101: Shift Right Arith (sra) - msb extends
       when "1101" => 
-        aluOut <= shift_right(signed(op1), desp);
+        aluOut <= std_logic_vector(shift_right(signed(op1), desp));
 
       -- 0110: OR (or)
       when "0110" => 

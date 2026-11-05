@@ -22,130 +22,102 @@ end entity decoder;
 
 architecture rtl of decoder is
     signal opcode    : std_logic_vector(4 downto 0);
-    signal funct3    : std_logic_vector(2 downto 0);
-    signal funct7    : std_logic_vector(6 downto 0);
     
 begin
 
-    op <= instr(6 downto 2);
+    opcode <= instr(6 downto 2);
 
---    rs1 <= instr(19 downto 15) when op = "01100" or op = "00100" or op = "00000" or op = "01000" else
---           (others => '0');
---    rs2 <= instr(24 downto 20) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00000" or instr(6 downto 2) = "01000" else
---           (others => '0');
---    rd <= instr(11 downto 7) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00100" or instr(6 downto 2) = "11000" or instr(6 downto 2) = "11011" or instr(6 downto 2) = "01101" or instr(6 downto 2) = "00101" else
---           --     (others => '0');
-
-
-   process(clk, nRst)
+   process(opcode, instr)
+     variable funct3 : std_logic_vector(2 downto 0);
+     variable funct7 : std_logic;
    begin
      if nRst = '0' then
          rs1    <= (others => '0');
          rs2    <= (others => '0');
          rd     <= (others => '0');
+         imm    <= (others => '0');
+         aloup  <= (others => '0');
+
       elsif rising_edge(clk) then
         case opcode is
          when "01100" => -- R-type
-           funct3 <= instr(14 downto 12);
-           funct7 <= instr(31 downto 25);
-           aloup  <= funct3 & funct7(5);  -- Cogemos el bit(5) porque es el único que cambia y asi no implemetamos ninguna lógica
+           funct3 := instr(14 downto 12);
+           funct7 := instr(30);
+           aloup  <= funct7 & funct3;  -- Cogemos el bit(5) porque es el único que cambia y asi no implemetamos ninguna lógica
            rs1    <= instr(19 downto 15);
            rs2    <= instr(24 downto 20);
            rd     <= instr(11 downto 7);
            imm    <= (others => '0');
 
          when "00100" => -- I-type
-           funct3 <= instr(14 downto 12);
-           aloup  <= funct3 & imm(10);  -- Cogemos el bit 10 porque es el que cambia    REVISAR 
+           funct3 := instr(14 downto 12);
+           aloup  <= instr(30) & funct3;  -- Cogemos el bit 30 para selecionar funct3 = 0x05 y ambas combinaciones 
            rs1    <= instr(19 downto 15);
-           rs2    <= instr(24 downto 20);
+           rs2    <= (others => '0');
            rd     <= instr(11 downto 7);
-           imm    <= instr(31 downto 25);
-         when "00000" => -- LOAD
-           funct3 <= instr(14 downto 12);
-         when "01000" => -- STORE
-         when "11000" => -- BRANCH
-         when "11011" => -- jal
-         when "11001" => -- jalr
-         when "01101" => -- lui
-         when "00101" => --auipc
+           imm    <= (31 downto 11 => instr(31)) & instr(30 downto 20);
+
+         when "00000" => -- I-type LOAD
+           funct3 := instr(14 downto 12);
+           rs1    <= instr(19 downto 15);
+           rd     <= instr(11 downto 7);
+           imm    <= (31 downto 11 => instr(31)) & instr(30 downto 20);
+           rs2    <= (others => '0');
+           aloup  <= (others => '0');
+
+         when "01000" => -- S-type STORE
+           rs1    <= instr(19 downto 15);
+           rs2    <= instr(24 downto 20); 
+           imm    <= (31 downto 11 => instr(31)) & instr(30 downto 25) & instr(11 downto 7);
+           rd     <= (others => '0');
+           aloup  <= (others => '0');
+
+         when "11000" => -- B-type BRANCH
+           rs1    <= instr(19 downto 15);
+           rs2    <= instr(24 downto 20); 
+           imm    <= (31 downto 12 => instr(31)) & instr(7) & instr(30 downto 25) & instr(11 downto 8) & '0';
+           rd     <= (others => '0');
+           aloup  <= (others => '0');
+
+         when "11011" => -- J-type jal
+           rd     <= instr(11 downto 7);
+           imm    <= (31 downto 20 => instr(31)) & instr(19 downto 12) & instr(20) & instr(30 downto 21) & '0';
+           rs1    <= (others => '0');
+           rs2    <= (others => '0');
+           aloup  <= (others => '0');
+           
+         when "11001" => -- I-type jalr
+           rs1    <= instr(19 downto 15);
+           rs2    <= (others => '0');
+           rd     <= instr(11 downto 7);
+           imm    <= (31 downto 11 => instr(31)) & instr(30 downto 20);
+           aloup  <= (others => '0');
+           
+         when "01101" => -- U-type lui
+           rd     <= instr(11 downto 7);
+           imm    <= instr(31 downto 13) & (12 downto 0 => instr(12)); 
+           rs1    <= (others => '0');
+           rs2    <= (others => '0');
+           aloup  <= (others => '0');
+
+         when "00101" => -- U-type auipc
+           rd     <= instr(11 downto 7);
+           imm    <= instr(31 downto 13) & (12 downto 0 => instr(12)); 
+           rs1    <= (others => '0');
+           rs2    <= (others => '0');
+           aloup  <= (others => '0');
+
          when others =>
-          -- rs1
-           if op = "01100" or op = "00100" or op = "00000" or op = "01000" then
-               rs1 <= instr(19 downto 15);
-           else
-               rs1 <= (others => '0');
-           end if;
-            -- rs2
-           if op = "01100" or op = "00000" or op = "01000" then
-               rs2 <= instr(24 downto 20);
-           else
-               rs2 <= (others => '0');
-            end if;
+           rs1    <= (others => '0');
+           rs2    <= (others => '0');
+           rd     <= (others => '0');
+           imm    <= (others => '0');
+           aloup  <= (others => '0');
 
-            -- rd
-            if op = "01100" or op = "00100" or op = "11000" or op = "11011" or op = "01101" or op = "00101" then
-                rd <= instr(11 downto 7);
-            else
-                rd <= (others => '0');
-            end if;
-
-            -- funct3
-            if op = "01100" or op = "00100" or op = "00000" or op = "01000" then
-                funct3 <= instr(14 downto 12);
-            else
-                funct3 <= (others => '0');
-            end if;
-
-            -- funct7
-            if op = "01100" then
-                funct7 <= instr(31 downto 25);
-            else
-                funct7 <= (others => '0');
-            end if;
-
-        end if;
+        end case;
+      end if;
     end process;
-
-    aloup <= "0000" when 
-             "0001"
-             "1000"
-             "1100"
-             "1110"
-             "0010"
-             "1011"
-             "1010"
-             "0100"
-             "0110"
-    
-
 end architecture rtl;
 
---Solo en vivado 2008 o eso dice
---Architecture rtl of decoder is
---begin
---    process(clk, nRst)
-  --  begin
-    --    if nRst = '0' then
-      --      opcode <= (others => '0');
-        --    rs1 <= (others => '0');
-          --  rs2 <= (others => '0');
-            --rd <= (others => '0');
- --           funct3 <= (others => '0');
-   --         funct7 <= (others => '0');
-     --       imm <= (others => '0');
-       -- elsif rising_edge(clk) then
-         --   rs1 <= instr(19 downto 15) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00100" or instr(6 downto 2) = "00000" or instr(6 downto 2) = "01000" else
-          --      (others => '0');
-            --rs2 <= instr(24 downto 20) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00000" or instr(6 downto 2) = "01000" else
-              --  (others => '0');
-           -- rd <= instr(11 downto 7) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00100" or instr(6 downto 2) = "11000" or instr(6 downto 2) = "11011" or instr(6 downto 2) = "01101" or instr(6 downto 2) = "00101" else
-           --     (others => '0');
-           -- funct3 <= instr(14 downto 12) when instr(6 downto 2) = "01100" or instr(6 downto 2) = "00100" or instr(6 downto 2) = "00000" or instr(6 downto 2) = "01000" else
-           --     (others => '0');
-           -- funct7 <= instr(31 downto 25) when instr(6 downto 2) = "01100" else
-            --    (others => '0');
-       -- end if;
-   -- end process;
-    
+
     
