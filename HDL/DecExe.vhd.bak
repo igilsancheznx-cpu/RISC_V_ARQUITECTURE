@@ -13,9 +13,9 @@ entity DecExe is
         clk       : in   std_logic;
         nRst      : in   std_logic;
         rdata_a   : in   std_logic_vector(REG_WIDTH-1 downto 0);
+        rdata_b   : in   std_logic_vector(REG_WIDTH-1 downto 0);
         addr_b    : out  std_logic_vector(ADDR_WIDTH-1 downto 0);
         wdata_b   : out  std_logic_vector(REG_WIDTH-1 downto 0);
-        rdata_b   : in   std_logic_vector(REG_WIDTH-1 downto 0);
         we_b      : out  std_logic;
         be_b      : out  std_logic_vector(ALU_DECOD-1 downto 0)
     );
@@ -53,14 +53,22 @@ begin
     if nRst = '0' then
       addr_b  <= (others => '0');   
       wdata_b <= (others => '0');    
-      we_b    <= (others => '0');  
+      we_b    <= '0';  
       be_b    <= (others => '0');
 
     elsif clk'event and clk = '1' then
-      addr_b  <= wAlu;
-      wdata_b <= rdata2;
-      we_b    <= aux_we_b;
-      be_b    <= aux_be_b;
+      if aux_we_b = '1' then
+        addr_b  <= wAlu;
+        wdata_b <= rdata2;
+        we_b    <= aux_we_b;
+        be_b    <= aux_be_b;
+      else
+        addr_b  <= (others => '0');   
+        wdata_b <= (others => '0');    
+        we_b    <= '0';  
+        be_b    <= (others => '0');
+
+      end if;
     end if;
   end process;
 

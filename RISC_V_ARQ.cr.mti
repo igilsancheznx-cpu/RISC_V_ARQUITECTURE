@@ -9,11 +9,6 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 ** Warning: C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd(50): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 ** Warning: C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd(58): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
--- Loading package STANDARD
-** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.vhd(1): (vcom-1491) Empty source files.
-
 } {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\DecExe.vhd}
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
@@ -78,6 +73,13 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling architecture rtl of memory
 ** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd(48): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv {1 {vlog -work work -vopt -sv -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\TEST\DecExe_tb.sv}
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_decoder
+
+Top level modules:
+	tb_decoder
+
 } {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\fetch.vhd}
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
@@ -92,7 +94,7 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
 ** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd(2): (vcom-1491) Empty source files.
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\decoder.vhd}
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
 -- Loading package TEXTIO
