@@ -47,7 +47,7 @@ begin
       -- 0010: Set Less Than (slt)
       when "0010" => 
         if signed(op1) < signed(op2) then
-          aluOut <= (31 downto 1 => '0') & '1';
+          aluOut <= (0 => '1', others => '0');
         else 
           aluOut <= (others => '0');
         end if;
@@ -55,7 +55,7 @@ begin
       -- 0011: Set Less Than Unsigned (sltu)
       when "0011" => 
         if unsigned(op1) < unsigned(op2) then
-          aluOut <= (31 downto 1 => '0') & '1';
+          aluOut <= (0 => '1', others => '0');
         else 
           aluOut <= (others => '0');
         end if;

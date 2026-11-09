@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity disvision is
+entity division is
 generic (
     INSTR_WIDTH : integer := 32; 
     ADDR_WIDTH: integer := 17
@@ -12,7 +12,7 @@ generic (
     divisor   : in     std_logic_vector(INSTR_WIDTH-1 downto 0);      -- Divisor B
     cociente  : in     std_logic_vector(INSTR_WIDTH-1 downto 0);    -- Cociente C
     resto     : in     std_logic_vector(ADDR_WIDTH - 1 downto 0);   -- Resto R
-    enable    : inout  std_logic;
+    enable    : inout  std_logic
   );
 end division;
 

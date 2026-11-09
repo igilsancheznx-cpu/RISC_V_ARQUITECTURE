@@ -86,7 +86,7 @@ begin
     end case;
   end process;
 
-  -- SEÑALES PARA IMPLEMENTAR las INSTRUCCIONES de salto condicional: beq, bne, blt, bge, bltu, bgeu
+  -- SENALES PARA IMPLEMENTAR las INSTRUCCIONES de salto condicional: beq, bne, blt, bge, bltu, bgeu
 
   eq <= '1' when op1 = op2 else
         '0';

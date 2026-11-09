@@ -46,7 +46,6 @@ begin
     
     U0: entity work.fetch(rtl)
     generic map(
-        INSTR_WIDTH => MEM_WIDTH,
         ADDR_WIDTH  => ADDR_WIDTH
     )
     port map(
