@@ -2,79 +2,99 @@
 
 module tb_alu;
 
-    // 1. Parámetros
-    localparam int ALU_LENGTH = 32;
-    localparam int ALU_DECOD  = 5;
+  localparam int ALU_LENGTH = 32;
+  localparam int ALU_DECOD  = 4;
 
-    // 2. Señales para conectar a la ALU
-    logic [ALU_LENGTH-1:0] op1;
-    logic [ALU_LENGTH-1:0] op2;
-    logic [ALU_DECOD-1:0]  aloup;
-    
-    logic                  eq;
-    logic                  lt;
-    logic                  ltu;
-    logic [ALU_LENGTH-1:0] aluOut;
+  // Estímulos[cite: 2]
+  logic [ALU_LENGTH-1:0] op1;
+  logic [ALU_LENGTH-1:0] op2;
+  logic [ALU_DECOD-1:0]  aloup;
 
-    // 3. Instanciación del módulo VHDL ALU (DUT)
-    alu #(
-        .ALU_LENGTH(ALU_LENGTH),
-        .ALU_DECOD(ALU_DECOD)
-    ) dut (
-        .op1(op1),
-        .op2(op2),
-        .aloup(aloup),
-        .eq(eq),
-        .lt(lt),
-        .ltu(ltu),
-        .aluOut(aluOut)
-    );
+  // Salidas[cite: 2]
+  logic                  eq;
+  logic                  lt;
+  logic                  ltu;
+  logic [ALU_LENGTH-1:0] aluOut;
 
-    // 4. Bloque de prueba secuencial
-    initial begin
-        // Monitor para imprimir en la consola del simulador ante cada cambio
-        $display("--------------------------------------------------------------------------------------------------");
-        $display(" TIME |  OP  |     OP1     |     OP2     |    ALUOUT   | EQ | LT | LTU ");
-        $display("--------------------------------------------------------------------------------------------------");
-        $monitor("%5t | %5b | %d | %d | %d |  %b |  %b |  %b", 
-                 $time, aloup, $signed(op1), $signed(op2), $signed(aluOut), eq, lt, ltu);
+  // Instancia del DUT (alu.vhd)[cite: 2]
+  alu #(
+    .ALU_LENGTH (ALU_LENGTH),
+    .ALU_DECOD  (ALU_DECOD)
+  ) dut (
+    .op1    (op1),
+    .op2    (op2),
+    .aloup  (aloup),
+    .eq     (eq),
+    .lt     (lt),
+    .ltu    (ltu),
+    .aluOut (aluOut)
+  );
 
-        // --- CASO 1: Suma Signed (0000) ---
-        op1 = 32'd15;      op2 = 32'd10;      aloup = 5'b00000; #10;
-        
-        // --- CASO 2: Resta Signed (1000) ---
-        op1 = 32'd20;      op2 = 32'd5;       aloup = 5'b01000; #10;
-        
-        // --- CASO 3: Shift Left Logical (0001) ---
-        op1 = 32'h0000000F; op2 = 32'd2;       aloup = 5 me00001; #10; // 15 << 2 = 60
-        
-        // --- CASO 4: Set Less Than Signed (0010) ---
-        op1 = -32'd10;     op2 = 32'd5;       aloup = 5'b00010; #10; // -10 < 5 -> SLT = 1
-        
-        // --- CASO 5: Set Less Than Unsigned (0011) ---
-        op1 = -32'd10;     op2 = 32'd5;       aloup = 5'b00011; #10; // Unsigned: 0xFFFFFFF6 < 5 -> SLTU = 0
-        
-        // --- CASO 6: XOR (0100) ---
-        op1 = 32'hFF00FF00; op2 = 32'hFFFF0000; aloup = 5'b00100; #10;
-        
-        // --- CASO 7: Shift Right Logical (0101) ---
-        op1 = 32'hF0000000; op2 = 32'd4;       aloup = 5'b00101; #10; // Rellena con 0s a la izquierda
-        
-        // --- CASO 8: Shift Right Arithmetic (1101) ---
-        op1 = 32'hF0000000; op2 = 32'd4;       aloup = 5'b01101; #10; // Extiende el bit de signo '1'
-        
-        // --- CASO 9: OR (0110) ---
-        op1 = 32'h12340000; op2 = 32'h00005678; aloup = 5'b00110; #10;
-        
-        // --- CASO 10: AND (0111) ---
-        op1 = 32'hFFFF1234; op2 = 32'hFFFF0000; aloup = 5'b00111; #10;
+  task automatic test_alu_op(
+    input string       op_name,
+    input logic [3:0]  in_aloup,
+    input logic [31:0] in_op1,
+    input logic [31:0] in_op2,
+    input logic [31:0] exp_out,
+    input logic        exp_eq,
+    input logic        exp_lt,
+    input logic        exp_ltu
+  );
+    begin
+      op1   = in_op1;
+      op2   = in_op2;
+      aloup = in_aloup;
+      #5;
 
-        // --- CASO 11: Comprobación de Banderas (EQ / LT / LTU) ---
-        op1 = 32'd42;      op2 = 32'd42;      aloup = 5'b00000; #10; // Comprobar EQ = 1
+      $display("[%s | aloup=%b] op1=0x%08H, op2=0x%08H -> aluOut=0x%08H | eq=%b, lt=%b, ltu=%b",
+               op_name, aloup, op1, op2, aluOut, eq, lt, ltu);
 
-        $display("--------------------------------------------------------------------------------------------------");
-        $display("Simulación completada con éxito.");
-        $finish;
+      assert (aluOut === exp_out) else $error("Fallo aluOut en %s: esp 0x%08H, obt 0x%08H", op_name, exp_out, aluOut);
+      assert (eq     === exp_eq)  else $error("Fallo flag eq en %s: esp %b, obt %b", op_name, exp_eq, eq);
+      assert (lt     === exp_lt)  else $error("Fallo flag lt en %s: esp %b, obt %b", op_name, exp_lt, lt);
+      assert (ltu    === exp_ltu) else $error("Fallo flag ltu en %s: esp %b, obt %b", op_name, exp_ltu, ltu);
     end
+  endtask
+
+  initial begin
+    $display("=== INICIO TESTBENCH ALU ===");
+
+    // 1. 0000: Suma signed (15 + (-5) = 10) | 15 > -5 signed (lt=0), 0x0000000F < 0xFFFFFFFB unsigned (ltu=1)[cite: 2]
+    test_alu_op("ADD ", 4'b0000, 32'd15, -32'd5, 32'd10, 1'b0, 1'b0, 1'b1);
+
+    // 2. 1000: Resta signed (-5 - 15 = -20) | -5 < 15 signed (lt=1), 0xFFFFFFFB > 0x0000000F unsigned (ltu=0)[cite: 2]
+    test_alu_op("SUB ", 4'b1000, -32'd5, 32'd15, -32'd20, 1'b0, 1'b1, 1'b0);
+
+    // 3. 0001: Shift Left Logical (1 << 4 = 16)[cite: 2]
+    test_alu_op("SLL ", 4'b0001, 32'h0000_0001, 32'd4, 32'h0000_0010, 1'b0, 1'b1, 1'b1);
+
+    // 4. 0010: Set Less Than Signed (-10 < 5 -> 1)[cite: 2]
+    test_alu_op("SLT ", 4'b0010, -32'd10, 32'd5, 32'd1, 1'b0, 1'b1, 1'b0);
+
+    // 5. 0011: Set Less Than Unsigned (-10 [0xFFFFFFF6] < 5 -> 0)[cite: 2]
+    test_alu_op("SLTU", 4'b0011, -32'd10, 32'd5, 32'd0, 1'b0, 1'b1, 1'b0);
+
+    // 6. 0100: XOR[cite: 2]
+    test_alu_op("XOR ", 4'b0100, 32'hAAAA_5555, 32'hFFFF_0000, 32'h5555_5555, 1'b0, 1'b1, 1'b0);
+
+    // 7. 0101: Shift Right Logical (0x8000_0000 >> 4 = 0x0800_0000)[cite: 2]
+    test_alu_op("SRL ", 4'b0101, 32'h8000_0000, 32'd4, 32'h0800_0000, 1'b0, 1'b1, 1'b0);
+
+    // 8. 1101: Shift Right Arithmetic (0x8000_0000 >>> 4 = 0xF800_0000)[cite: 2]
+    test_alu_op("SRA ", 4'b1101, 32'h8000_0000, 32'd4, 32'hF800_0000, 1'b0, 1'b1, 1'b0);
+
+    // 9. 0110: OR[cite: 2]
+    test_alu_op("OR  ", 4'b0110, 32'h1234_0000, 32'h0000_5678, 32'h1234_5678, 1'b0, 1'b0, 1'b0);
+
+    // 10. 0111: AND (y prueba de igualdad eq=1)[cite: 2]
+    test_alu_op("AND ", 4'b0111, 32'hCAFE_BABE, 32'hCAFE_BABE, 32'hCAFE_BABE, 1'b1, 1'b0, 1'b0);
+
+    // 11. When others: Código no definido (ej. 4'b1111 -> 0)[cite: 2]
+    test_alu_op("OTHR", 4'b1111, 32'h1234_5678, 32'h8765_4321, 32'h0000_0000, 1'b0, 1'b0, 1'b1);
+
+    #10;
+    $display("=== FIN TESTBENCH ALU ===");
+    $finish;
+  end
 
 endmodule

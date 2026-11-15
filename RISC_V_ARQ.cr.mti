@@ -1,5 +1,12 @@
-C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd {2 {vcom -work work -2008 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd}
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv {1 {vlog -work work -sv -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\TEST\tb_regFile.sv}
+Model Technology ModelSim ALTERA vlog 10.4d Compiler 2015.12 Dec 30 2015
+-- Compiling module tb_Regfile
+
+Top level modules:
+	tb_Regfile
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd {2 {vcom -work work -2008 -explicit -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd}
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -7,10 +14,12 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling entity alu
 -- Compiling architecture rtl of alu
 ** Warning: C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd(50): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
 ** Warning: C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\alu.vhd(58): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\DecExe.vhd}
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -21,8 +30,8 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading entity decoder
 -- Loading entity alu
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\regFile.vhd}
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -30,13 +39,8 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling entity regFile
 -- Compiling architecture rtl of regFile
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
--- Loading package STANDARD
-** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/testbench_1.vhd(1): (vcom-1491) Empty source files.
-
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd {0 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -45,26 +49,23 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling architecture rtl of division
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(26): Illegal target for signal assignment.
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(26): (vcom-1136) Unknown identifier "divisor_s".
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(28): (vcom-1604) No feasible entries for subprogram "RESIZE" with expected return type "STD_LOGIC_VECTOR".
-   Visible subprograms are:
-      (explicit) NUMERIC_STD.RESIZE[UNRESOLVED_SIGNED, NATURAL return UNRESOLVED_SIGNED] at vhdl_src/ieee/mti_numeric_std.vhd(1415)
-      (explicit) NUMERIC_STD.RESIZE[UNRESOLVED_UNSIGNED, NATURAL return UNRESOLVED_UNSIGNED] at vhdl_src/ieee/mti_numeric_std.vhd(1425)
+
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(28): No feasible entries for subprogram "RESIZE".
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(34): (vcom-1136) Unknown identifier "clk".
+
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(34): Expression is not a signal.
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(38): near "RC_v": (vcom-1576) expecting == or '+' or '-' or '&'.
+
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(40): (vcom-1581) No feasible entries for infix operator '+'.
+
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(40): Bad right hand side (infix expression) in variable assignment.
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(42): (vcom-1581) No feasible entries for infix operator '-'.
+
 ** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(42): Bad right hand side (infix expression) in variable assignment.
-** Note: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(53): VHDL Compiler exiting
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd(53): VHDL Compiler exiting
 
-} {9.0 12.0 15.0 22.0} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
--- Loading package STANDARD
-** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/core_testbench.vhd(1): (vcom-1491) Empty source files.
-
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd {2 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {9.0 11.0 12.0 14.0 15.0 17.0 18.0 19.0 20.0 22.0 23.0 25.0} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd {2 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -73,15 +74,23 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling architecture rtl of memory
 ** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd(48): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv {1 {vlog -work work -vopt -sv -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\TEST\DecExe_tb.sv}
-QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv {1 {vlog -work work -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
+Model Technology ModelSim ALTERA vlog 10.4d Compiler 2015.12 Dec 30 2015
+-- Compiling module DecExe_tb
+
+Top level modules:
+	DecExe_tb
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv {1 {vlog -work work -sv -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\TEST\tb_decoder.sv}
+Model Technology ModelSim ALTERA vlog 10.4d Compiler 2015.12 Dec 30 2015
 -- Compiling module tb_decoder
 
 Top level modules:
 	tb_decoder
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\fetch.vhd}
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -89,13 +98,8 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling entity fetch
 -- Compiling architecture rtl of fetch
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
--- Loading package STANDARD
-** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_RiscV.vhd(2): (vcom-1491) Empty source files.
-
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\decoder.vhd}
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -103,20 +107,34 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling entity decoder
 -- Compiling architecture rtl of decoder
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv {0 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
-QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv {1 {vlog -work work -sv -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\TEST\tb_alu.sv}
+Model Technology ModelSim ALTERA vlog 10.4d Compiler 2015.12 Dec 30 2015
 -- Compiling module tb_alu
-** Error: (vlog-13069) C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv(49): near "me00001": syntax error, unexpected IDENTIFIER, expecting ';'.
 
-} {4.0 5.0} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
-QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+Top level modules:
+	tb_alu
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv {2 {vlog -work work -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
+Model Technology ModelSim ALTERA vlog 10.4d Compiler 2015.12 Dec 30 2015
 -- Compiling module tb_top
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv(95): (vlog-2186) SystemVerilog testbench feature
+
+(randomization, coverage or assertion) detected in the design.
+
+These features are only supported in Questasim.
+
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv(3): (vlog-2186) SystemVerilog testbench feature
+
+(randomization, coverage or assertion) detected in the design.
+
+These features are only supported in Questasim.
+
 
 Top level modules:
 	tb_top
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\core.vhd}
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd {0 {vcom -work work -2002 -explicit -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd
+Model Technology ModelSim ALTERA vcom 10.4d Compiler 2015.12 Dec 30 2015
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
@@ -125,10 +143,14 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling architecture estructural of core
 -- Loading entity fetch
 -- Loading entity DecExe
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(62): (vcom-1484) Unknown formal identifier "NUM_REGS".
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd
-QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
--- Loading package STANDARD
-** Error (suppressible): C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/fetch_testbench.vhd(1): (vcom-1491) Empty source files.
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(62): (vcom-1484) Unknown formal identifier "NUM_REGS".
 
-} {} {}}
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(67): (vcom-1484) Unknown formal identifier "instr".
+
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(68): (vcom-1484) Unknown formal identifier "wdata".
+
+** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(71): VHDL Compiler exiting
+
+} {11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0} {}}

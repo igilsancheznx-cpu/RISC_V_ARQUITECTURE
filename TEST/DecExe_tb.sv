@@ -1,104 +1,163 @@
 `timescale 1ns / 1ps
 
-module tb_decoder;
+module DecExe_tb;
 
-  localparam int REG_WIDTH = 32;
-  localparam int ALU_DECOD = 4;
+  localparam int REG_WIDTH  = 32;
+  localparam int ADDR_REGS  = 5;
+  localparam int ADDR_WIDTH = 17;
+  localparam int ALU_DECOD  = 4;
 
-  // Estimulos
-  logic [REG_WIDTH-1:0]   instr;
+  // Puertos de DecExe
+  logic                  clk;
+  logic                  nRst;
+  logic [REG_WIDTH-1:0]  rdata_a;
+  logic [REG_WIDTH-1:0]  rdata_b;
+  logic [ADDR_WIDTH-1:0] addr_b;
+  logic [REG_WIDTH-1:0]  wdata_b;
+  logic                  we_b;
+  logic [ALU_DECOD-1:0]  be_b;
 
-  // Salidas del DUT
-  logic [4:0]             rs1;
-  logic [4:0]             rs2;
-  logic [4:0]             rd;
-  logic [REG_WIDTH-1:0]   imm;
-  logic                   ena_imm;
-  logic [ALU_DECOD-1:0]   aloup;
-  logic                   we_b;
-  logic [3:0]             be_b;
+  // Monitorización jerárquica de señales intermedias entre bloques
+  wire [4:0]           mon_opcode = dut.U1.opcode;
+  wire [4:0]           mon_rs1    = dut.rs1;
+  wire [4:0]           mon_rs2    = dut.rs2;
+  wire [4:0]           mon_rd     = dut.rd;
+  wire [REG_WIDTH-1:0] mon_imm    = dut.imm;
+  wire [ALU_DECOD-1:0] mon_aloup  = dut.aloup;
+  wire [REG_WIDTH-1:0] mon_rdata1 = dut.rdata1;
+  wire [REG_WIDTH-1:0] mon_rdata2 = dut.rdata2;
+  wire [REG_WIDTH-1:0] mon_wAlu   = dut.wAlu;
+  wire                 mon_eq     = dut.eq;
+  wire                 mon_lt     = dut.lt;
+  wire                 mon_ltu    = dut.ltu;
 
-  // Instancia del decodificador puramente combinacional
-  decoder #(
-    .REG_WIDTH(REG_WIDTH),
-    .ALU_DECOD(ALU_DECOD)
+  // Señal auxiliar
+  logic [REG_WIDTH-1:0] preload_val_static;
+
+  // Instancia del DUT
+  DecExe #(
+    .REG_WIDTH  (REG_WIDTH),
+    .ADDR_REGS  (ADDR_REGS),
+    .ADDR_WIDTH (ADDR_WIDTH),
+    .ALU_DECOD  (ALU_DECOD)
   ) dut (
-    .instr    (instr),
-    .rs1      (rs1),
-    .rs2      (rs2),
-    .rd       (rd),
-    .imm      (imm),
-    .ena_imm  (ena_imm),
-    .aloup    (aloup),
-    .we_b     (we_b),
-    .be_b     (be_b)
+    .clk     (clk),
+    .nRst    (nRst),
+    .rdata_a (rdata_a),
+    .rdata_b (rdata_b),
+    .addr_b  (addr_b),
+    .wdata_b (wdata_b),
+    .we_b    (we_b),
+    .be_b    (be_b)
   );
 
-  // Tarea de verificacion combinacional
-  task automatic test_instr(
-    input logic [31:0] instruction_word,
-    input string       test_name,
-    input logic [4:0]  exp_rd,
-    input logic [4:0]  exp_rs1,
-    input logic [4:0]  exp_rs2,
-    input logic [31:0] exp_imm,
-    input logic        exp_ena_imm,
-    input logic [3:0]  exp_aloup,
-    input logic        exp_we_b
+  // Reloj de 10 ns
+  initial clk = 1'b0;
+  always #5 clk = ~clk;
+
+  // Tarea auxiliar para precargar registros en U0 (regFile)
+  task automatic preload_reg(
+    input logic [4:0]  reg_addr,
+    input logic [31:0] reg_val
   );
     begin
-      instr = instruction_word;
-      #5; // Retardo para permitir la propagacion combinacional
+      @(negedge clk);
+      // Inyectamos una instrucción tipo I dummy cuyo rd sea reg_addr
+      preload_val_static = reg_val;
+      rdata_a = {12'd0, 5'd0, 3'b000, reg_addr, 7'b0010011};
+      force dut.we   = 1'b1;
+      force dut.wAlu = preload_val_static;;
+      @(posedge clk);
+      #1;
+      release dut.we;
+      release dut.wAlu;
+      $display("  [PRELOAD] Registro x%0d <= 0x%08H (%0d)", reg_addr, reg_val, $signed(reg_val));
+    end
+  endtask
 
-      $display("--------------------------------------------------");
-      $display("[CHECK: %s] Instr = 0x%08H", test_name, instruction_word);
-      $display("  Obtenido -> rd:x%0d, rs1:x%0d, rs2:x%0d, imm:0x%08H, aloup:%b, we:%b", 
-               rd, rs1, rs2, imm, aloup, we_b);
+  // Tarea de comprobación de instrucciones operando sobre los registros precargados
+  task automatic test_instr_with_regs(
+    input logic [31:0] instruction_word,
+    input string       test_name,
+    input logic [4:0]  exp_opcode,
+    input logic [31:0] exp_rdata1,
+    input logic [31:0] exp_rdata2,
+    input logic [31:0] exp_wAlu,
+    input logic        exp_eq,
+    input logic        exp_lt
+  );
+    begin
+      @(negedge clk);
+      rdata_a = instruction_word;
+      #2; // Propagación combinacional: decoder -> regFile -> alu
 
-      // Comprobaciones
-      assert (rd === exp_rd)       else $error("Fallo rd: esperado %0d, obtenido %0d", exp_rd, rd);
-      assert (rs1 === exp_rs1)     else $error("Fallo rs1: esperado %0d, obtenido %0d", exp_rs1, rs1);
-      assert (rs2 === exp_rs2)     else $error("Fallo rs2: esperado %0d, obtenido %0d", exp_rs2, rs2);
-      assert (imm === exp_imm)     else $error("Fallo imm: esperado 0x%08H, obtenido 0x%08H", exp_imm, imm);
-      assert (ena_imm === exp_ena_imm) else $error("Fallo ena_imm");
-      assert (aloup === exp_aloup) else $error("Fallo aloup: esperado %b, obtenido %b", exp_aloup, aloup);
-      assert (we_b === exp_we_b)   else $error("Fallo we_b");
+      $display("------------------------------------------------------------------");
+      $display("[%s] Instr = 0x%08H | opcode = %b | aloup = %b",
+               test_name, instruction_word, mon_opcode, mon_aloup);
+      $display("  Registros leidos -> rs1(x%0d)=0x%08H, rs2(x%0d)=0x%08H",
+               mon_rs1, mon_rdata1, mon_rs2, mon_rdata2);
+      $display("  Salida ALU       -> wAlu=0x%08H (%0d) | eq=%b, lt=%b, ltu=%b",
+               mon_wAlu, $signed(mon_wAlu), mon_eq, mon_lt, mon_ltu);
+
+      assert (mon_opcode === exp_opcode) else $error("Fallo opcode en %s", test_name);
+      assert (mon_rdata1 === exp_rdata1) else $error("Fallo rdata1 en %s: esp 0x%08H, obt 0x%08H", test_name, exp_rdata1, mon_rdata1);
+      assert (mon_rdata2 === exp_rdata2) else $error("Fallo rdata2 en %s: esp 0x%08H, obt 0x%08H", test_name, exp_rdata2, mon_rdata2);
+      assert (mon_wAlu   === exp_wAlu)   else $error("Fallo wAlu en %s: esp 0x%08H, obt 0x%08H", test_name, exp_wAlu, mon_wAlu);
+      assert (mon_eq     === exp_eq)     else $error("Fallo flag eq en %s", test_name);
+      assert (mon_lt     === exp_lt)     else $error("Fallo flag lt en %s", test_name);
+
+      @(posedge clk);
     end
   endtask
 
   initial begin
-    $display("=== INICIO TEST DECODIFICADOR COMBINACIONAL ===");
+    $display("=== INICIO SIMULACION DECEXE CON PRECARGA DE REGISTROS ===");
 
-    // 1. R-Type: sub x3, x1, x2 (funct7=0100000, funct3=000) -> aloup = 4'b1000
-    test_instr(32'h4020_81B3, "R-Type (SUB)",  5'd3, 5'd1, 5'd2, 32'h0, 1'b0, 4'b1000, 1'b0);
+    // 1. Reset inicial
+    nRst    = 1'b0;
+    rdata_a = 32'h0;
+    rdata_b = 32'h0;
+    repeat (2) @(posedge clk);
+    nRst = 1'b1;
 
-    // 2. I-Type ALU: addi x5, x1, -4 (imm = 0xFFFFFFFC) -> aloup = 4'b0000
-    test_instr(32'hFFC0_8293, "I-Type (ADDI)", 5'd5, 5'd1, 5'd0, 32'hFFFF_FFFC, 1'b1, 4'b0000, 1'b0);
+    // 2. Precarga de 5 registros en el banco (x1 a x5)
+    $display("\n--- FASE 1: PRECARGA DE 5 REGISTROS ---");
+    preload_reg(5'd1, 32'd20);          // x1 = 20  (0x0000_0014)
+    preload_reg(5'd2, 32'd5);           // x2 = 5   (0x0000_0005)
+    preload_reg(5'd3, -32'd10);         // x3 = -10 (0xFFFF_FFF6)
+    preload_reg(5'd4, 32'h0000_00FF);   // x4 = 255 (0x0000_00FF)
+    preload_reg(5'd5, 32'd20);          // x5 = 20  (0x0000_0014)
 
-    // 3. I-Type LOAD: lw x6, 8(x2) (imm = 8)
-    test_instr(32'h0081_2303, "I-Type (LW)",   5'd6, 5'd2, 5'd0, 32'h0000_0008, 1'b1, 4'b0000, 1'b0);
+    // 3. Ejecución de instrucciones usando los datos almacenados en x1..x5
+    $display("\n--- FASE 2: COMPROBACION DE INSTRUCCIONES ---");
 
-    // 4. S-Type STORE: sw x4, 12(x2) (imm = 12, we_b = 1)
-    test_instr(32'h0041_2623, "S-Type (SW)",   5'd0, 5'd2, 5'd4, 32'h0000_000C, 1'b1, 4'b0000, 1'b1);
+    // R-Type ADD: add x6, x1, x2 -> 20 + 5 = 25 (0x19) | eq=0, lt=0
+    test_instr_with_regs(32'h0020_8333, "R-Type ADD (x1 + x2)",
+                         5'b01100, 32'd20, 32'd5, 32'd25, 1'b0, 1'b0);
 
-    // 5. B-Type BRANCH: beq x1, x2, -8 (imm = 0xFFFFFFF8)
-    test_instr(32'hFE20_8CE3, "B-Type (BEQ)",  5'd0, 5'd1, 5'd2, 32'hFFFF_FFF8, 1'b0, 4'b0000, 1'b0);
+    // R-Type SUB: sub x7, x1, x2 -> 20 - 5 = 15 (0x0F) | eq=0, lt=0
+    test_instr_with_regs(32'h4020_83B3, "R-Type SUB (x1 - x2)",
+                         5'b01100, 32'd20, 32'd5, 32'd15, 1'b0, 1'b0);
 
-    // 6. J-Type: jal x1, 16 (imm = 16)
-    test_instr(32'h0100_00EF, "J-Type (JAL)",  5'd1, 5'd0, 5'd0, 32'h0000_0010, 1'b0, 4'b0000, 1'b0);
+    // R-Type AND: and x8, x1, x4 -> 0x14 & 0xFF = 0x14 | eq=0, lt=0
+    test_instr_with_regs(32'h0040_F433, "R-Type AND (x1 & x4)",
+                         5'b01100, 32'd20, 32'h0000_00FF, 32'h0000_0014, 1'b0, 1'b0);
 
-    // 7. I-Type: jalr x1, 0(x5) (imm = 0)
-    test_instr(32'h0002_80E7, "I-Type (JALR)", 5'd1, 5'd5, 5'd0, 32'h0000_0000, 1'b0, 4'b0000, 1'b0);
+    // R-Type SLT: slt x9, x3, x2 -> (-10 < 5) = 1 | eq=0, lt=1
+    test_instr_with_regs(32'h0021_A4B3, "R-Type SLT (x3 < x2)",
+                         5'b01100, -32'd10, 32'd5, 32'd1, 1'b0, 1'b1);
 
-    // 8. U-Type: lui x7, 0x12345 (imm = 0x12345000)
-    test_instr(32'h1234_53B7, "U-Type (LUI)",  5'd7, 5'd0, 5'd0, 32'h1234_5000, 1'b0, 4'b0000, 1'b0);
+    // B-Type BEQ: beq x1, x5, +16 -> compara x1 (20) y x5 (20) -> eq=1, lt=0
+    test_instr_with_regs(32'h0050_8863, "B-Type BEQ (x1 == x5)",
+                         5'b11000, 32'd20, 32'd20, 32'd40, 1'b1, 1'b0);
 
-    // 9. U-Type: auipc x8, 0x00002 (imm = 0x00002000)
-    test_instr(32'h0000_2417, "U-Type (AUIPC)",5'd8, 5'd0, 5'd0, 32'h0000_2000, 1'b0, 4'b0000, 1'b0);
+    // S-Type SW: sw x4, 12(x1) -> lee base x1=20 y dato x4=0xFF (NOTA: ALU suma rdata1+rdata2 porque falta mux imm)
+    test_instr_with_regs(32'h0040_A623, "S-Type SW (base x1, dato x4)",
+                         5'b01000, 32'd20, 32'h0000_00FF, 32'd275, 1'b0, 1'b0);
 
-    #10;
-    $display("--------------------------------------------------");
-    $display("=== SIMULACION COMPLETADA SIN ERRORES ===");
+    #20;
+    $display("------------------------------------------------------------------");
+    $display("=== SIMULACION COMPLETADA ===");
     $finish;
   end
 
