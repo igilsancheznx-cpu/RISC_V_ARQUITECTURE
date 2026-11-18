@@ -22,8 +22,10 @@ entity regFile is
         waddr     : in  std_logic_vector(ADDR_REGS - 1 downto 0);
         wreg      : in  std_logic_vector(REG_WIDTH - 1 downto 0); -- Write from ALU
         we        : in  std_logic; -- Write enable
-        wb        : in  std_logic; -- Write back from memory 
-        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
+        wl        : in  std_logic; -- Write back from memory 
+        be_l      : in  std_logic_vector(3 downto 0); -- Byte enable for write back
+        sign_l    : in  std_logic; -- Load con signo (lb, lh): '1' extiende signo, '0' extiende con ceros
+        wdata    : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
     );
 end entity regFile;
 
@@ -41,8 +43,8 @@ begin
 
     -- Escritura sincrona
     process(clk, nRst)
-        variable waddr_d : integer;
-        variable widx_wb : integer;
+        variable waddr_d  : integer;
+        variable sign_bit : std_logic;  -- Bit de signo del dato cargado
     begin
         if nRst = '0' then
             regs <= (others => (others => '0'));
@@ -56,8 +58,26 @@ begin
               end if;
   
               -- Escritura independiente desde Write-Back (evitando escribir en x0)
-              if wb = '1' then
-                  regs(waddr_d) <= wdata;
+              if wl = '1' then
+                -- Bit de signo: bit 15 si se carga media palabra (lh), bit 7 si se carga un byte (lb)
+                if be_l(1) = '1' then
+                  sign_bit := wdata(15);
+                else
+                  sign_bit := wdata(7);
+                end if;
+
+                for i in 0 to 3 loop
+                  if be_l(i) = '1' then
+                    -- Byte habilitado: se copia el dato de memoria
+                    regs(waddr_d)(8*i + 7 downto 8*i) <= wdata(8*i + 7 downto 8*i);
+                  elsif sign_l = '1' then
+                    -- Byte no habilitado en lb / lh: extension de signo
+                    regs(waddr_d)(8*i + 7 downto 8*i) <= (others => sign_bit);
+                  else
+                    -- Byte no habilitado en lbu / lhu: extension con ceros
+                    regs(waddr_d)(8*i + 7 downto 8*i) <= (others => '0');
+                  end if;
+                end loop;
               end if;
             else
               regs(waddr_d) <= (others => '0');

@@ -75,7 +75,8 @@ module tb_alu;
     test_alu_op("SLTU", 4'b0011, -32'd10, 32'd5, 32'd0, 1'b0, 1'b1, 1'b0);
 
     // 6. 0100: XOR[cite: 2]
-    test_alu_op("XOR ", 4'b0100, 32'hAAAA_5555, 32'hFFFF_0000, 32'h5555_5555, 1'b0, 1'b1, 1'b0);
+    // ltu = 1: 0xAAAA5555 <u 0xFFFF0000
+    test_alu_op("XOR ", 4'b0100, 32'hAAAA_5555, 32'hFFFF_0000, 32'h5555_5555, 1'b0, 1'b1, 1'b1);
 
     // 7. 0101: Shift Right Logical (0x8000_0000 >> 4 = 0x0800_0000)[cite: 2]
     test_alu_op("SRL ", 4'b0101, 32'h8000_0000, 32'd4, 32'h0800_0000, 1'b0, 1'b1, 1'b0);

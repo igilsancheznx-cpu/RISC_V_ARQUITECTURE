@@ -31,47 +31,52 @@ architecture rtl of DecExe is
     -- Write port
     signal wAlu   : std_logic_vector(REG_WIDTH - 1 downto 0); --ALU
     signal we     : std_logic; -- Write enable
-    signal wb     : std_logic; -- Write back from memory
-    signal rd     : std_logic_vector(ADDR_REGS - 1 downto 0); -- Register to write back  ELIMINAR RD o waddr Unificar !!!
+    signal wl     : std_logic; -- Write back from memory
+    signal be_l   : std_logic_vector(3 downto 0); -- Byte enable for write back
+    signal sign_l : std_logic; -- Load con signo (lb, lh)
+    signal rd     : std_logic_vector(ADDR_REGS - 1 downto 0); -- Dirección del registro destino
     -- Signal decoder instruction
     signal imm    : std_logic_vector(REG_WIDTH - 1 downto 0);
     signal aloup  : std_logic_vector(ALU_DECOD - 1 downto 0);
     signal eq     : std_logic;
     signal lt     : std_logic;
     signal ltu    : std_logic;
+    -- Multiplexor para ALU
+    signal ena_imm : std_logic;  -- Multiplexor de la ALU para seleccionar entre rs2 o imm
+    signal auxOp2 : std_logic_vector(REG_WIDTH - 1 downto 0);  -- Señal auxiliar para multiplexor de la ALU
     -- Signal auxiliar for memory
     signal aux_addr_b  : std_logic_vector(ADDR_WIDTH-1 downto 0);  
     signal aux_wdata_b : std_logic_vector(REG_WIDTH-1 downto 0); 
-    signal aux_rdata_b : std_logic_vector(REG_WIDTH-1 downto 0);
     signal aux_we_b    : std_logic;  
     signal aux_be_b    : std_logic_vector(ALU_DECOD-1 downto 0);
 
 begin
 
---  process(clk, nRst)
---  begin
---    if nRst = '0' then
---      addr_b  <= (others => '0');   
---      wdata_b <= (others => '0');    
---      we_b    <= '0';  
---      be_b    <= (others => '0');
---
---    elsif clk'event and clk = '1' then
---      if aux_we_b = '1' then
---        addr_b  <= wAlu;
---        wdata_b <= rdata2;
---        we_b    <= aux_we_b;
---        be_b    <= aux_be_b;
---      else
---        addr_b  <= (others => '0');   
---        wdata_b <= (others => '0');    
---        we_b    <= '0';  
---        be_b    <= (others => '0');
---
---      end if;
---    end if;
---  end process;
+  process(clk, nRst)
+  begin
+    if nRst = '0' then
+      addr_b  <= (others => '0');   
+      wdata_b <= (others => '0');    
+      we_b    <= '0';  
+      be_b    <= (others => '0');
 
+    elsif clk'event and clk = '1' then
+      if aux_we_b = '1' then
+        addr_b  <= wAlu(ADDR_WIDTH - 1 downto 0);
+        wdata_b <= rdata2;
+        we_b    <= aux_we_b;
+        be_b    <= aux_be_b;
+      else
+        addr_b  <= (others => '0');   
+        wdata_b <= (others => '0');    
+        we_b    <= '0';  
+        be_b    <= (others => '0');
+
+      end if;
+    end if;
+  end process;
+
+    auxOp2 <= rdata2 when ena_imm = '0' else imm;
 
     U0: entity work.regFile(rtl)
     generic map(
@@ -87,9 +92,11 @@ begin
         rdata2    => rdata2,
         waddr     => rd,
         we        => we,
-        wb        => wb,
+        wl        => wl,
+        be_l      => be_l,
+        sign_l    => sign_l,
         wreg      => wAlu,
-        wdata     => aux_rdata_b
+        wdata     => rdata_b
     );
 
     -- DECODER
@@ -106,7 +113,14 @@ begin
         rs1       => rs1,
         rs2       => rs2,
         rd        => rd,
-        imm       => imm       -- Determinar tamano, si hay que extenderlo y por cuantos multiplexores tiene que pasar, y se utiliza para los saltos PC_Target
+        imm       => imm,
+        we        => we,
+        wl        => wl,
+        be_l      => be_l,
+        sign_l    => sign_l,
+        ena_imm   => ena_imm,
+        we_b      => aux_we_b,
+        be_b      => aux_be_b
     );
 
     -- Disenar un multiplexor para elegir imm o rdata2 depende de la aloup (INSTR I)
@@ -119,7 +133,7 @@ begin
     )
     port map(
       op1 => rdata1,
-      op2 => rdata2,
+      op2 => auxOp2,
       aloup => aloup,
       eq => eq,
       lt => lt,

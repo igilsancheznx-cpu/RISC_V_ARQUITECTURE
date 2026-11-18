@@ -1,0 +1,103 @@
+[N
+8
+8
+10 ADDR_WIDTH
+6
+6 decexe
+3
+3 rtl
+4
+9 REG_WIDTH
+2
+7 decoder
+1
+70 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/work
+5
+9 ALU_DECOD
+7
+9 ADDR_REGS
+]
+[G
+1
+2
+3
+1
+4
+1
+0
+32
+0
+0 0
+0
+0
+]
+[G
+1
+6
+3
+1
+5
+1
+0
+4
+0
+0 0
+0
+0
+]
+[G
+1
+6
+3
+1
+4
+1
+0
+32
+0
+0 0
+0
+0
+]
+[G
+1
+2
+3
+1
+5
+1
+0
+4
+0
+0 0
+0
+0
+]
+[G
+1
+6
+3
+1
+7
+1
+0
+5
+0
+0 0
+0
+0
+]
+[G
+1
+6
+3
+1
+8
+1
+0
+17
+0
+0 0
+0
+0
+]

@@ -1,0 +1,20 @@
+BEGIN 2:1:rtl:decexe:work
+    rs2 :  1:tb_AluMemoryRegFileDec:fast:work
+    imm :  1:tb_AluMemoryRegFileDec:fast:work
+    rdata1 :  1:tb_AluMemoryRegFileDec:fast:work
+    wAlu :  1:tb_AluMemoryRegFileDec:fast:work
+    lt :  1:tb_AluMemoryRegFileDec:fast:work
+    we :  1:tb_AluMemoryRegFileDec:fast:work
+    aux_we_b :  1:tb_AluMemoryRegFileDec:fast:work
+    rs1 :  1:tb_AluMemoryRegFileDec:fast:work
+    rd :  1:tb_AluMemoryRegFileDec:fast:work
+    aloup :  1:tb_AluMemoryRegFileDec:fast:work
+    rdata2 :  1:tb_AluMemoryRegFileDec:fast:work
+    eq :  1:tb_AluMemoryRegFileDec:fast:work
+    ltu :  1:tb_AluMemoryRegFileDec:fast:work
+    wl :  1:tb_AluMemoryRegFileDec:fast:work
+    aux_be_b :  1:tb_AluMemoryRegFileDec:fast:work
+END 
+BEGIN 2:1:rtl:decoder:work
+    opcode :  1:tb_AluMemoryRegFileDec:fast:work
+END 

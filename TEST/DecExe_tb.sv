@@ -188,7 +188,11 @@ module DecExe_tb;
   endtask
 
   initial begin
-    $display("=== INICIO SIMULACION DECEXE CON PRECARGA DE REGISTROS ===");
+    // Valores esperados en el banco (x0 siempre vale 0)
+    logic [REG_WIDTH-1:0] reg_vals [2**ADDR_REGS];
+    int                   j;
+
+    $display("=== INICIO SIMULACION DECEXE: ESCRITURA EN LOS %0d REGISTROS ===", 2**ADDR_REGS);
 
     // 1. Reset inicial
     nRst    = 1'b0;
@@ -197,52 +201,42 @@ module DecExe_tb;
     repeat (2) @(posedge clk);
     nRst = 1'b1;
 
-    // 2. Precarga de registros usando la pseudoinstrucción LI
-    $display("\n--- FASE 1: PRECARGA DE REGISTROS CON PSEUDOINSTRUCCION LI ---");
-    sim_li(5'd1, 32'd20);          // Cabe en 12b -> Ejecuta solo ADDI x1, x0, 20
-    sim_li(5'd2, 32'd5);           // Cabe en 12b -> Ejecuta solo ADDI x2, x0, 5
-    sim_li(5'd3, -32'd10);         // Cabe en 12b -> Ejecuta solo ADDI x3, x0, -10
-    sim_li(5'd4, 32'h0000_00FF);   // Cabe en 12b -> Ejecuta solo ADDI x4, x0, 255
-    sim_li(5'd5, 32'd20);          // Cabe en 12b -> Ejecuta solo ADDI x5, x0, 20
-    
-    // 2. Precarga de 5 registros en el banco (x1 a x5)
-    $display("\n--- FASE 1: PRECARGA DE 5 REGISTROS ---");
-    preload_reg(5'd1, 32'd20);          // x1 = 20  (0x0000_0014)
-    preload_reg(5'd2, 32'd5);           // x2 = 5   (0x0000_0005)
-    preload_reg(5'd3, -32'd10);         // x3 = -10 (0xFFFF_FFF6)
-    preload_reg(5'd4, 32'h0000_00FF);   // x4 = 255 (0x0000_00FF)
-    preload_reg(5'd5, 32'd20);          // x5 = 20  (0x0000_0014)
+    // Valores de prueba:
+    //  - registros pares  -> caben en 12 bits con signo (positivos y negativos) -> ADDI
+    //  - registros impares -> necesitan 32 bits -> LUI + ADDI
+    for (int i = 0; i < 2**ADDR_REGS; i++) begin
+      if (i % 2 == 0) reg_vals[i] = i * 100 - 1500;
+      else            reg_vals[i] = 32'h8765_4321 ^ (i << 8);
+    end
 
-    // 3. Ejecución de instrucciones usando los datos almacenados en x1..x5
-    $display("\n--- FASE 2: COMPROBACION DE INSTRUCCIONES ---");
+    // 2. Escritura de cada registro con la pseudoinstrucción LI y comprobación
+    //    inmediata con test_instr_with_regs: add x0, xi, x0
+    //    -> rdata1 = xi, rdata2 = 0, wAlu = xi (rd = x0, no modifica el banco)
+    $display("\n--- FASE 1: ESCRITURA Y COMPROBACION DE x0..x31 ---");
+    for (int i = 0; i < 2**ADDR_REGS; i++) begin
+      sim_li(i[4:0], reg_vals[i]);
+      if (i == 0) reg_vals[0] = 32'h0;  // x0 no se puede escribir: debe seguir valiendo 0
 
-    // R-Type ADD: add x6, x1, x2 -> 20 + 5 = 25 (0x19) | eq=0, lt=0
-    test_instr_with_regs(32'h0020_8333, "R-Type ADD (x1 + x2)",
-                         5'b01100, 32'd20, 32'd5, 32'd25, 1'b0, 1'b0);
+      test_instr_with_regs({7'b0000000, 5'd0, i[4:0], 3'b000, 5'd0, 7'b0110011},
+                           $sformatf("Escritura x%0d (add x0, x%0d, x0)", i, i),
+                           5'b01100, reg_vals[i], 32'h0, reg_vals[i],
+                           (reg_vals[i] == 32'h0), ($signed(reg_vals[i]) < 0));
+    end
 
-    // R-Type SUB: sub x7, x1, x2 -> 20 - 5 = 15 (0x0F) | eq=0, lt=0
-    test_instr_with_regs(32'h4020_83B3, "R-Type SUB (x1 - x2)",
-                         5'b01100, 32'd20, 32'd5, 32'd15, 1'b0, 1'b0);
-
-    // R-Type AND: and x8, x1, x4 -> 0x14 & 0xFF = 0x14 | eq=0, lt=0
-    test_instr_with_regs(32'h0040_F433, "R-Type AND (x1 & x4)",
-                         5'b01100, 32'd20, 32'h0000_00FF, 32'h0000_0014, 1'b0, 1'b0);
-
-    // R-Type SLT: slt x9, x3, x2 -> (-10 < 5) = 1 | eq=0, lt=1
-    test_instr_with_regs(32'h0021_A4B3, "R-Type SLT (x3 < x2)",
-                         5'b01100, -32'd10, 32'd5, 32'd1, 1'b0, 1'b1);
-
-    // B-Type BEQ: beq x1, x5, +16 -> compara x1 (20) y x5 (20) -> eq=1, lt=0
-    test_instr_with_regs(32'h0050_8863, "B-Type BEQ (x1 == x5)",
-                         5'b11000, 32'd20, 32'd20, 32'd40, 1'b1, 1'b0);
-
-    // S-Type SW: sw x4, 12(x1) -> lee base x1=20 y dato x4=0xFF (NOTA: ALU suma rdata1+rdata2 porque falta mux imm)
-    test_instr_with_regs(32'h0040_A623, "S-Type SW (base x1, dato x4)",
-                         5'b01000, 32'd20, 32'h0000_00FF, 32'd275, 1'b0, 1'b0);
+    // 3. Lectura simultanea por ambos puertos: add x0, xi, x(31-i)
+    //    Comprueba que ninguna escritura posterior ha pisado a otro registro
+    $display("\n--- FASE 2: LECTURA POR rdata1 Y rdata2 (add x0, xi, x(31-i)) ---");
+    for (int i = 0; i < 2**ADDR_REGS; i++) begin
+      j = 2**ADDR_REGS - 1 - i;
+      test_instr_with_regs({7'b0000000, j[4:0], i[4:0], 3'b000, 5'd0, 7'b0110011},
+                           $sformatf("Lectura x%0d y x%0d (add x0, x%0d, x%0d)", i, j, i, j),
+                           5'b01100, reg_vals[i], reg_vals[j], reg_vals[i] + reg_vals[j],
+                           (reg_vals[i] == reg_vals[j]), ($signed(reg_vals[i]) < $signed(reg_vals[j])));
+    end
 
     #20;
     $display("------------------------------------------------------------------");
-    $display("=== SIMULACION COMPLETADA ===");
+    $display("=== SIMULACION COMPLETADA (revisar si hay mensajes ** Error) ===");
     $finish;
   end
 

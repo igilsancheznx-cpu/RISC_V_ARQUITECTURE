@@ -15,7 +15,11 @@ entity decoder is
         rs2       : out std_logic_vector(ALU_DECOD downto 0);
         rd        : out std_logic_vector(ALU_DECOD downto 0);
         imm       : out std_logic_vector(REG_WIDTH - 1 downto 0);
-        ena_imm   : out std_logic;
+        ena_imm   : out std_logic;                                 -- Multiplexor de la ALU para seleccionar entre rs2 o imm
+        we        : out std_logic;                                 -- Habilita la escritura en el banco de registros desde la etapa de Execution (para ALU)
+        wl        : out std_logic;                                 -- Habilita la escritura en el banco de registros desde la etapa de Write-Back (para LOAD)
+        be_l      : out std_logic_vector(ALU_DECOD - 1 downto 0);  -- Byte enable for write back
+        sign_l    : out std_logic;                                 -- Load con signo (lb, lh) -> funct3(2) = '0'
         aloup     : out std_logic_vector(ALU_DECOD - 1 downto 0);
         -- ENABLE FOR MEMORY
         we_b      : out std_logic;
@@ -28,45 +32,68 @@ architecture rtl of decoder is
     
 begin
 
-    opcode <= instr(6 downto 2);
+  opcode <= instr(6 downto 2);
+
+  we <= '1' when (opcode = "01100" or opcode = "00100" or opcode = "11001" or opcode = "01101" or opcode = "00101" or opcode = "11011") 
+            else '0';
+  
+  ena_imm <= '1' when (opcode = "00100" or opcode = "00000" or opcode = "01000" or opcode = "11001" or opcode = "01101" or opcode = "00101") 
+            else '0';
+
+  we_b <= '1' when (opcode = "01000") else '0';
+
+  wl      <= '1' when (opcode = "00000") else '0';
+
+  sign_l  <= '1' when (opcode = "00000" and instr(14) = '0') else '0';  -- lb, lh (funct3(2) = '0') | lbu, lhu (funct3(2) = '1')
 
   process(opcode, instr)
     variable funct3 : std_logic_vector(2 downto 0);
     variable funct7 : std_logic;
   begin
-    rs1    <= (others => '0');
-    rs2    <= (others => '0');
-    rd     <= (others => '0');
-    imm    <= (others => '0');
-    aloup  <= (others => '0');
+    rs1     <= (others => '0');
+    rs2     <= (others => '0');
+    rd      <= (others => '0');
+    imm     <= (others => '0');
+    aloup   <= (others => '0');
+    be_b    <= (others => '0');
+    be_l    <= (others => '0');
 
     funct3  := instr(14 downto 12);
     funct7  := instr(30);
 
     case opcode is
       when "01100" => -- R-type
-        aloup   <= funct7 & funct3;  -- Cogemos el bit(5) porque es el �nico que cambia y asi no implemetamos ninguna l�gica
+        aloup   <= funct7 & funct3;  -- Cogemos el bit(5) porque es el unico que cambia y asi no implemetamos ninguna l�gica
         rs1     <= instr(19 downto 15);
         rs2     <= instr(24 downto 20);
         rd      <= instr(11 downto 7);
         imm     <= (others => '0');
-        ena_imm <= '0';
 
       when "00100" => -- I-type
-        aloup   <= instr(30) & funct3;  -- Cogemos el bit 30 para selecionar funct3 = 0x05 y ambas combinaciones 
+
+        if funct3 = "101" then  -- Shift right logical o arithmetic
+          aloup <= funct7 & funct3;           -- Cogemos el bit 30 para selecionar funct3 = 0x05 y ambas combinaciones 
+        else
+          aloup <= '0' & funct3;  -- Cogemos el bit(5) porque es el unico que cambia y asi no implemetamos ninguna l�gica
+        end if;
         rs1     <= instr(19 downto 15);
         rs2     <= (others => '0');
         rd      <= instr(11 downto 7);
         imm     <= (31 downto 11 => instr(31)) & instr(30 downto 20);
-        ena_imm <= '1';
 
       when "00000" => -- I-type LOAD
         rs1     <= instr(19 downto 15);
         rd      <= instr(11 downto 7);
         imm     <= (31 downto 11 => instr(31)) & instr(30 downto 20);
-        rs2     <= (others => '0');
-        ena_imm <= '1';
+        rs2     <= (others => '0');      
         aloup   <= (others => '0');  -- La ALU suma rs1 + imm conseguir la direccion
+
+        -- Senales de control de escritura en memoria        
+        if    funct3 = "000" or funct3 = "100" then be_l <= "0001";
+        elsif funct3 = "001" or funct3 = "101" then be_l <= "0011";
+        elsif funct3 = "010"                   then be_l <= "1111";
+        else  be_l <= "0000";
+        end if;
 
       when "01000" => -- S-type STORE
         rs1     <= instr(19 downto 15);
@@ -74,15 +101,14 @@ begin
         imm     <= (31 downto 11 => instr(31)) & instr(30 downto 25) & instr(11 downto 7);
         rd      <= (others => '0');
         aloup   <= (others => '0');
-        ena_imm <= '1';
-        we_b    <= '1';
-        
+
         if    funct3 = "000" then be_b <= "0001";
         elsif funct3 = "001" then be_b <= "0011";
         elsif funct3 = "010" then be_b <= "1111";
         else  be_b <= "0000";
         end if;
 
+        
       when "11000" => -- B-type BRANCH
         rs1    <= instr(19 downto 15);
         rs2    <= instr(24 downto 20); 
