@@ -48,29 +48,29 @@ architecture rtl of DecExe is
 
 begin
 
-  process(clk, nRst)
-  begin
-    if nRst = '0' then
-      addr_b  <= (others => '0');   
-      wdata_b <= (others => '0');    
-      we_b    <= '0';  
-      be_b    <= (others => '0');
-
-    elsif clk'event and clk = '1' then
-      if aux_we_b = '1' then
-        addr_b  <= wAlu;
-        wdata_b <= rdata2;
-        we_b    <= aux_we_b;
-        be_b    <= aux_be_b;
-      else
-        addr_b  <= (others => '0');   
-        wdata_b <= (others => '0');    
-        we_b    <= '0';  
-        be_b    <= (others => '0');
-
-      end if;
-    end if;
-  end process;
+--  process(clk, nRst)
+--  begin
+--    if nRst = '0' then
+--      addr_b  <= (others => '0');   
+--      wdata_b <= (others => '0');    
+--      we_b    <= '0';  
+--      be_b    <= (others => '0');
+--
+--    elsif clk'event and clk = '1' then
+--      if aux_we_b = '1' then
+--        addr_b  <= wAlu;
+--        wdata_b <= rdata2;
+--        we_b    <= aux_we_b;
+--        be_b    <= aux_be_b;
+--      else
+--        addr_b  <= (others => '0');   
+--        wdata_b <= (others => '0');    
+--        we_b    <= '0';  
+--        be_b    <= (others => '0');
+--
+--      end if;
+--    end if;
+--  end process;
 
 
     U0: entity work.regFile(rtl)

@@ -106,14 +106,14 @@ begin
         
       when "01101" => -- U-type lui
         rd     <= instr(11 downto 7);
-        imm    <= instr(31 downto 13) & (12 downto 0 => instr(12)); 
+        imm    <= instr(31 downto 12) & (11 downto 0 => '0'); 
         rs1    <= (others => '0');
         rs2    <= (others => '0');
         aloup  <= (others => '0');
 
       when "00101" => -- U-type auipc
         rd     <= instr(11 downto 7);
-        imm    <= instr(31 downto 13) & (12 downto 0 => instr(12)); 
+        imm    <= instr(31 downto 12) & (11 downto 0 => '0'); 
         rs1    <= (others => '0');
         rs2    <= (others => '0');
         aloup  <= (others => '0');
