@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity regFile is
     generic (
         REG_WIDTH : integer := 32; 
-        ADDR_REGS  : integer := 5
+        ADDR_REG  : integer := 5
     );
     -- Dado que una instrucción puede indicar dos registros fuente y un registro 
     -- destino, deberán existir al menos dos interfaces de lectura y uno de escritura. 
@@ -13,25 +13,25 @@ entity regFile is
         clk       : in  std_logic;
         nRst      : in  std_logic;
         -- Read port 1
-        raddr1    : in  std_logic_vector(ADDR_REGS - 1 downto 0);
+        raddr1    : in  std_logic_vector(ADDR_REG - 1 downto 0);
         rdata1    : out std_logic_vector(REG_WIDTH - 1 downto 0);
         -- Read port 2
-        raddr2    : in  std_logic_vector(ADDR_REGS - 1 downto 0);
+        raddr2    : in  std_logic_vector(ADDR_REG - 1 downto 0);
         rdata2    : out std_logic_vector(REG_WIDTH - 1 downto 0);
         -- Write port
-        waddr     : in  std_logic_vector(ADDR_REGS - 1 downto 0);
+        waddr     : in  std_logic_vector(ADDR_REG - 1 downto 0);
         wreg      : in  std_logic_vector(REG_WIDTH - 1 downto 0); -- Write from ALU
         we        : in  std_logic; -- Write enable
         wl        : in  std_logic; -- Write back from memory 
         be_l      : in  std_logic_vector(3 downto 0); -- Byte enable for write back
         sign_l    : in  std_logic; -- Load con signo (lb, lh): '1' extiende signo, '0' extiende con ceros
-        wdata    : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
+        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
     );
 end entity regFile;
 
 
 architecture rtl of regFile is
-    type reg_array is array (0 to 2**ADDR_REGS - 1) of std_logic_vector(REG_WIDTH - 1 downto 0);
+    type reg_array is array (0 to 2**ADDR_REG - 1) of std_logic_vector(REG_WIDTH - 1 downto 0);
     signal regs : reg_array := (others => (others => '0'));
 begin
 

@@ -1,4 +1,11 @@
-C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd {2 {vcom -work work -2008 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd
+C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_Regfile
+
+Top level modules:
+	tb_Regfile
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd {2 {vcom -work work -2008 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -9,7 +16,30 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 ** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd(50): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 ** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd(58): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none {C:\Users\jucho\Documents\MASTER\ARQUITECTURAS\RISC_V_ARQUITECTURE\HDL\divisor.vhd}
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_writeReg
+
+Top level modules:
+	tb_writeReg
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity regFile
+-- Compiling architecture rtl of regFile
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_fetchMemory
+
+Top level modules:
+	tb_fetchMemory
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -25,6 +55,30 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading entity RISCV_Div
 -- Compiling architecture segmentada of RISCV_Div
 -- Loading entity RISCV_Div
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd {2 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity memory
+-- Compiling architecture rtl of memory
+** Warning: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd(48): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_AluMemoryRegFileDec
+
+Top level modules:
+	tb_AluMemoryRegFileDec
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_decoder
+
+Top level modules:
+	tb_decoder
 
 } {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
 QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
@@ -42,6 +96,22 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling entity fetch
 -- Compiling architecture rtl of fetch
 
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
+QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity decoder
+-- Compiling architecture rtl of decoder
+
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module tb_alu
+
+Top level modules:
+	tb_alu
+
 } {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv {1 {vlog -work work -vopt -sv -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
 QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling module tb_top
@@ -49,7 +119,7 @@ QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
 Top level modules:
 	tb_top
 
-} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd {0 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd
+} {} {}} C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd {1 {vcom -work work -2002 -explicit -vopt -stats=none C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd
 QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -59,12 +129,5 @@ QuestaSim-64 vcom 2024.1 Compiler 2024.02 Feb  1 2024
 -- Compiling architecture estructural of core
 -- Loading entity fetch
 -- Loading entity DecExe
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(62): (vcom-1484) Unknown formal identifier "NUM_REGS".
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(62): (vcom-1484) Unknown formal identifier "NUM_REGS".
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(67): (vcom-1484) Unknown formal identifier "instr".
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(68): (vcom-1484) Unknown formal identifier "wdata".
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(69): (vcom-1035) Formal port "rdata_a" has OPEN or no actual associated with it.
-** Error: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(69): (vcom-1035) Formal port "rdata_b" has OPEN or no actual associated with it.
-** Note: C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd(71): VHDL Compiler exiting
 
-} {11.0 17.0} {}}
+} {} {}}

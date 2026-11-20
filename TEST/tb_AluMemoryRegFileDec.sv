@@ -7,10 +7,16 @@
 //   FASE 1: precarga de registros
 //   FASE 2: ALU tipo R   (add, sub, sll, slt, sltu, xor, srl, sra, or, and)
 //   FASE 3: ALU tipo I   (addi, slti, sltiu, xori, ori, andi, slli, srli, srai)
-//   FASE 4: saltos tipo B (beq, bne, blt, bge, bltu, bgeu)
+//   FASE 4: saltos tipo B (beq, bne, blt, bge, bltu, bgeu), tomados y no tomados
 //   FASE 5: stores tipo S (sb, sh, sw)
 //   FASE 6: loads tipo I  (lb, lh, lw, lbu, lhu)
 //   FASE 7: tipos U y J   (lui, auipc, jal, jalr)
+//
+// Saltos: el testbench fija pc_out = PC_TEST y comprueba pc_load y pc_target
+//   - branch: pc_load = 1 solo si se cumple la condicion, pc_target = PC + imm
+//   - jal:    pc_load = 1, pc_target = PC + imm
+//   - jalr:   pc_load = 1, pc_target = (rs1 + imm) con el bit 0 a 0
+//   - lui, auipc, stores y loads: pc_load = 0
 //
 // La memoria aun no esta conectada a DecExe: el testbench hace de memoria.
 //   - Stores: se comprueba la direccion (wAlu), el dato (rdata2) y los
@@ -21,7 +27,7 @@
 module tb_AluMemoryRegFileDec;
 
   localparam int REG_WIDTH  = 32;
-  localparam int ADDR_REGS  = 5;
+  localparam int ADDR_REG   = 5;
   localparam int ADDR_WIDTH = 17;
   localparam int ALU_DECOD  = 4;
 
@@ -45,6 +51,12 @@ module tb_AluMemoryRegFileDec;
   logic [REG_WIDTH-1:0]  wdata_b;
   logic                  we_b;
   logic [ALU_DECOD-1:0]  be_b;
+  // Señales del PC (bifurcaciones). DecExe no esta conectado al fetch en este
+  // test: el testbench fija pc_out y comprueba pc_load / pc_target
+  localparam logic [ADDR_WIDTH-1:0] PC_TEST = 17'h00040; // PC de las instrucciones de salto
+  logic [ADDR_WIDTH-1:0] pc_out;
+  logic                  pc_load;
+  logic [ADDR_WIDTH-1:0] pc_target;
 
   // Monitorización jerárquica de señales intermedias entre bloques
   wire [4:0]           mon_opcode = dut.U1.opcode;
@@ -63,6 +75,8 @@ module tb_AluMemoryRegFileDec;
   wire                 mon_wl     = dut.wl;        // escritura en banco de registros desde memoria (LOAD)
   wire                 mon_we_mem = dut.aux_we_b;  // escritura en memoria (decoder)
   wire [ALU_DECOD-1:0] mon_be_mem = dut.aux_be_b;  // byte enable de memoria (decoder)
+  wire                  mon_pc_load   = pc_load;    // carga del PC (salto tomado)
+  wire [ADDR_WIDTH-1:0] mon_pc_target = pc_target;  // direccion de salto
 
   // Señal auxiliar
   logic [REG_WIDTH-1:0] preload_val_static;
@@ -70,7 +84,7 @@ module tb_AluMemoryRegFileDec;
   // Instancia del DUT
   DecExe #(
     .REG_WIDTH  (REG_WIDTH),
-    .ADDR_REGS  (ADDR_REGS),
+    .ADDR_REG   (ADDR_REG),
     .ADDR_WIDTH (ADDR_WIDTH),
     .ALU_DECOD  (ALU_DECOD)
   ) dut (
@@ -81,8 +95,13 @@ module tb_AluMemoryRegFileDec;
     .addr_b  (addr_b),
     .wdata_b (wdata_b),
     .we_b    (we_b),
-    .be_b    (be_b)
+    .be_b     (be_b),
+    .pc_out   (pc_out),
+    .pc_load  (pc_load),
+    .pc_target(pc_target)
   );
+
+  initial pc_out = PC_TEST;
 
   // Reloj de 10 ns
   initial clk = 1'b0;
@@ -90,22 +109,37 @@ module tb_AluMemoryRegFileDec;
 
   // ---------------------------------------------------------------------------
   // Tarea auxiliar para precargar registros en U0 (regFile)
+  // Se precarga ejecutando instrucciones reales (sin force/release, ya que
+  // ModelSim ASE no permite hacer release de senales VHDL desde SV: vsim-FLI-3155):
+  //   - valor en [-2048, 2047] -> addi rd, x0, valor
+  //   - otro valor             -> lui rd, hi20 ; addi rd, rd, lo12
+  //     (hi20 se redondea sumando 0x800 porque addi extiende el signo de lo12)
   // ---------------------------------------------------------------------------
   task automatic preload_reg(
     input logic [4:0]  reg_addr,
     input logic [31:0] reg_val
   );
+    logic [31:0] hi;
+    logic [11:0] lo;
     begin
-      @(negedge clk);
-      // Inyectamos una instrucción tipo I dummy cuyo rd sea reg_addr
       preload_val_static = reg_val;
-      rdata_a = {12'd0, 5'd0, 3'b000, reg_addr, OP_I};
-      force dut.we   = 1'b1;
-      force dut.wAlu = preload_val_static;
-      @(posedge clk);
-      #1;
-      release dut.we;
-      release dut.wAlu;
+      lo = reg_val[11:0];
+      hi = reg_val + 32'h0000_0800;
+      if ($signed(reg_val) >= -2048 && $signed(reg_val) < 2048) begin
+        @(negedge clk);
+        rdata_a = {lo, 5'd0, 3'b000, reg_addr, OP_I};        // addi rd, x0, lo
+        @(posedge clk);
+        #1;
+      end else begin
+        @(negedge clk);
+        rdata_a = {hi[31:12], reg_addr, OP_LUI};             // lui  rd, hi
+        @(posedge clk);
+        #1;
+        @(negedge clk);
+        rdata_a = {lo, reg_addr, 3'b000, reg_addr, OP_I};    // addi rd, rd, lo
+        @(posedge clk);
+        #1;
+      end
       $display("  [PRELOAD] Registro x%0d <= 0x%08H (%0d)", reg_addr, reg_val, $signed(reg_val));
     end
   endtask
@@ -190,18 +224,21 @@ module tb_AluMemoryRegFileDec;
   endtask
 
   // ---------------------------------------------------------------------------
-  // Salto condicional (tipo B): compara rs1 con rs2, offset en imm
-  // y no debe escribir ni en registros ni en memoria
+  // Salto condicional (tipo B): compara rs1 con rs2, offset en imm,
+  // no debe escribir ni en registros ni en memoria, y solo carga el PC
+  // (pc_load = 1) si se cumple la condicion. pc_target = PC + imm
   // ---------------------------------------------------------------------------
   task automatic test_branch(
-    input logic [31:0] instruction_word,
-    input string       test_name,
-    input logic [31:0] exp_rdata1,
-    input logic [31:0] exp_rdata2,
-    input logic [31:0] exp_imm,
-    input logic        exp_eq,
-    input logic        exp_lt,
-    input logic        exp_ltu
+    input logic [31:0]           instruction_word,
+    input string                 test_name,
+    input logic [31:0]           exp_rdata1,
+    input logic [31:0]           exp_rdata2,
+    input logic [31:0]           exp_imm,
+    input logic                  exp_eq,
+    input logic                  exp_lt,
+    input logic                  exp_ltu,
+    input logic                  exp_taken,
+    input logic [ADDR_WIDTH-1:0] exp_target
   );
     begin
       @(negedge clk);
@@ -213,6 +250,8 @@ module tb_AluMemoryRegFileDec;
                test_name, instruction_word, mon_opcode, mon_imm, $signed(mon_imm));
       $display("  Registros leidos -> rs1(x%0d)=0x%08H, rs2(x%0d)=0x%08H | eq=%b, lt=%b, ltu=%b",
                mon_rs1, mon_rdata1, mon_rs2, mon_rdata2, mon_eq, mon_lt, mon_ltu);
+      $display("  Salto            -> PC=0x%05H | pc_load=%b (%s) | pc_target=0x%05H",
+               pc_out, mon_pc_load, exp_taken ? "tomado" : "no tomado", mon_pc_target);
 
       assert (mon_opcode === 5'b11000) else $error("Fallo opcode en %s", test_name);
       assert (mon_rdata1 === exp_rdata1) else $error("Fallo rdata1 en %s: esp 0x%08H, obt 0x%08H", test_name, exp_rdata1, mon_rdata1);
@@ -223,6 +262,10 @@ module tb_AluMemoryRegFileDec;
       assert (mon_ltu    === exp_ltu)    else $error("Fallo flag ltu en %s", test_name);
       assert (mon_we     === 1'b0)       else $error("Fallo en %s: no debe escribir en registros", test_name);
       assert (mon_we_mem === 1'b0)       else $error("Fallo en %s: no debe escribir en memoria", test_name);
+      assert (mon_pc_load === exp_taken)
+        else $error("Fallo pc_load en %s: esp %b, obt %b", test_name, exp_taken, mon_pc_load);
+      assert (mon_pc_target === exp_target)
+        else $error("Fallo pc_target en %s: esp 0x%05H, obt 0x%05H", test_name, exp_target, mon_pc_target);
 
       @(posedge clk);
     end
@@ -255,6 +298,7 @@ module tb_AluMemoryRegFileDec;
       assert (mon_we_mem === 1'b1)     else $error("Fallo we_b en %s: esp 1, obt %b", test_name, mon_we_mem);
       assert (mon_be_mem === exp_be)   else $error("Fallo be_b en %s: esp %b, obt %b", test_name, exp_be, mon_be_mem);
       assert (mon_we     === 1'b0)     else $error("Fallo en %s: un store no debe escribir en registros", test_name);
+      assert (mon_pc_load === 1'b0)    else $error("Fallo pc_load en %s: un store no debe saltar", test_name);
 
       @(posedge clk);
     end
@@ -286,6 +330,7 @@ module tb_AluMemoryRegFileDec;
       assert (mon_we_mem === 1'b0)     else $error("Fallo en %s: un load no debe escribir en memoria", test_name);
       assert (mon_wl     === 1'b1)     else $error("Fallo wl en %s: un load debe escribir el dato de memoria en registros", test_name);
       assert (mon_we     === 1'b0)     else $error("Fallo we en %s: un load no debe escribir la salida de la ALU en registros", test_name);
+      assert (mon_pc_load === 1'b0)    else $error("Fallo pc_load en %s: un load no debe saltar", test_name);
 
       @(posedge clk);
       #1;
@@ -296,13 +341,16 @@ module tb_AluMemoryRegFileDec;
 
   // ---------------------------------------------------------------------------
   // Tipos U y J (lui, auipc, jal, jalr): comprueba la decodificacion
-  // (opcode, rd, imm) y que se habilita la escritura en el banco
+  // (opcode, rd, imm), que se habilita la escritura en el banco y el salto:
+  // lui/auipc no saltan (pc_load = 0); jal/jalr saltan a exp_target
   // ---------------------------------------------------------------------------
   task automatic test_upper_jump(
-    input logic [31:0] instruction_word,
-    input string       test_name,
-    input logic [4:0]  exp_opcode,
-    input logic [31:0] exp_imm
+    input logic [31:0]           instruction_word,
+    input string                 test_name,
+    input logic [4:0]            exp_opcode,
+    input logic [31:0]           exp_imm,
+    input logic                  exp_pc_load,
+    input logic [ADDR_WIDTH-1:0] exp_target
   );
     begin
       @(negedge clk);
@@ -312,6 +360,14 @@ module tb_AluMemoryRegFileDec;
       $display("------------------------------------------------------------------");
       $display("[%s] Instr = 0x%08H | opcode = %b | rd = x%0d | imm = 0x%08H | we = %b",
                test_name, instruction_word, mon_opcode, mon_rd, mon_imm, mon_we);
+      $display("  Salto            -> PC=0x%05H | pc_load=%b | pc_target=0x%05H",
+               pc_out, mon_pc_load, mon_pc_target);
+
+      assert (mon_pc_load === exp_pc_load)
+        else $error("Fallo pc_load en %s: esp %b, obt %b", test_name, exp_pc_load, mon_pc_load);
+      if (exp_pc_load)
+        assert (mon_pc_target === exp_target)
+          else $error("Fallo pc_target en %s: esp 0x%05H, obt 0x%05H", test_name, exp_target, mon_pc_target);
 
       assert (mon_opcode === exp_opcode)              else $error("Fallo opcode en %s", test_name);
       assert (mon_rd     === instruction_word[11:7])  else $error("Fallo rd en %s: esp x%0d, obt x%0d", test_name, instruction_word[11:7], mon_rd);
@@ -435,32 +491,59 @@ module tb_AluMemoryRegFileDec;
     // =========================================================================
     // FASE 4: SALTOS TIPO B -> {imm[12], imm[10:5], rs2, rs1, funct3, imm[4:1], imm[11], opcode}
     // offset +16 -> imm[4:1] = 4'b1000 | offset -8 -> todos los bits altos a 1, imm[4:1] = 4'b1100
+    // PC = PC_TEST (0x40) -> destino +16 = 0x50 | destino -8 = 0x38
     // =========================================================================
     $display("\n--- FASE 4: SALTOS TIPO B ---");
 
+    // ---- Tomados (pc_load = 1) ----
     // beq x1, x5, +16 -> 20 == 20 -> salta
     test_branch({1'b0, 6'b000000, 5'd5, 5'd1, 3'b000, 4'b1000, 1'b0, OP_BRANCH}, "B BEQ  x1, x5, +16",
-                32'd20, 32'd20, 32'd16, 1'b1, 1'b0, 1'b0);
+                32'd20, 32'd20, 32'd16, 1'b1, 1'b0, 1'b0, 1'b1, PC_TEST + 17'd16);
 
     // bne x1, x2, +16 -> 20 != 5 -> salta
     test_branch({1'b0, 6'b000000, 5'd2, 5'd1, 3'b001, 4'b1000, 1'b0, OP_BRANCH}, "B BNE  x1, x2, +16",
-                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0);
+                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0, 1'b1, PC_TEST + 17'd16);
 
     // blt x3, x2, +16 -> -10 < 5 -> salta
     test_branch({1'b0, 6'b000000, 5'd2, 5'd3, 3'b100, 4'b1000, 1'b0, OP_BRANCH}, "B BLT  x3, x2, +16",
-                -32'd10, 32'd5, 32'd16, 1'b0, 1'b1, 1'b0);
+                -32'd10, 32'd5, 32'd16, 1'b0, 1'b1, 1'b0, 1'b1, PC_TEST + 17'd16);
 
     // bge x1, x2, +16 -> 20 >= 5 -> salta
     test_branch({1'b0, 6'b000000, 5'd2, 5'd1, 3'b101, 4'b1000, 1'b0, OP_BRANCH}, "B BGE  x1, x2, +16",
-                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0);
+                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0, 1'b1, PC_TEST + 17'd16);
 
     // bltu x2, x3, -8 -> 5 <u 0xFFFFFFF6 -> salta
     test_branch({1'b1, 6'b111111, 5'd3, 5'd2, 3'b110, 4'b1100, 1'b1, OP_BRANCH}, "B BLTU x2, x3, -8",
-                32'd5, -32'd10, -32'd8, 1'b0, 1'b0, 1'b1);
+                32'd5, -32'd10, -32'd8, 1'b0, 1'b0, 1'b1, 1'b1, PC_TEST - 17'd8);
 
     // bgeu x3, x2, -8 -> 0xFFFFFFF6 >=u 5 -> salta
     test_branch({1'b1, 6'b111111, 5'd2, 5'd3, 3'b111, 4'b1100, 1'b1, OP_BRANCH}, "B BGEU x3, x2, -8",
-                -32'd10, 32'd5, -32'd8, 1'b0, 1'b1, 1'b0);
+                -32'd10, 32'd5, -32'd8, 1'b0, 1'b1, 1'b0, 1'b1, PC_TEST - 17'd8);
+
+    // ---- No tomados (pc_load = 0) ----
+    // beq x1, x2, +16 -> 20 == 5 falso -> no salta
+    test_branch({1'b0, 6'b000000, 5'd2, 5'd1, 3'b000, 4'b1000, 1'b0, OP_BRANCH}, "B BEQ  x1, x2, +16 (no)",
+                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0, 1'b0, PC_TEST + 17'd16);
+
+    // bne x1, x5, +16 -> 20 != 20 falso -> no salta
+    test_branch({1'b0, 6'b000000, 5'd5, 5'd1, 3'b001, 4'b1000, 1'b0, OP_BRANCH}, "B BNE  x1, x5, +16 (no)",
+                32'd20, 32'd20, 32'd16, 1'b1, 1'b0, 1'b0, 1'b0, PC_TEST + 17'd16);
+
+    // blt x1, x2, +16 -> 20 < 5 falso -> no salta
+    test_branch({1'b0, 6'b000000, 5'd2, 5'd1, 3'b100, 4'b1000, 1'b0, OP_BRANCH}, "B BLT  x1, x2, +16 (no)",
+                32'd20, 32'd5, 32'd16, 1'b0, 1'b0, 1'b0, 1'b0, PC_TEST + 17'd16);
+
+    // bge x3, x2, +16 -> -10 >= 5 falso -> no salta
+    test_branch({1'b0, 6'b000000, 5'd2, 5'd3, 3'b101, 4'b1000, 1'b0, OP_BRANCH}, "B BGE  x3, x2, +16 (no)",
+                -32'd10, 32'd5, 32'd16, 1'b0, 1'b1, 1'b0, 1'b0, PC_TEST + 17'd16);
+
+    // bltu x3, x2, -8 -> 0xFFFFFFF6 <u 5 falso -> no salta
+    test_branch({1'b1, 6'b111111, 5'd2, 5'd3, 3'b110, 4'b1100, 1'b1, OP_BRANCH}, "B BLTU x3, x2, -8 (no)",
+                -32'd10, 32'd5, -32'd8, 1'b0, 1'b1, 1'b0, 1'b0, PC_TEST - 17'd8);
+
+    // bgeu x2, x3, -8 -> 5 >=u 0xFFFFFFF6 falso -> no salta
+    test_branch({1'b1, 6'b111111, 5'd3, 5'd2, 3'b111, 4'b1100, 1'b1, OP_BRANCH}, "B BGEU x2, x3, -8 (no)",
+                32'd5, -32'd10, -32'd8, 1'b0, 1'b0, 1'b1, 1'b0, PC_TEST - 17'd8);
 
     // =========================================================================
     // FASE 5: STORES TIPO S -> {imm[11:5], rs2, rs1, funct3, imm[4:0], opcode}
@@ -508,27 +591,33 @@ module tb_AluMemoryRegFileDec;
 
     // =========================================================================
     // FASE 7: TIPOS U Y J
-    // auipc, jal y jalr escriben PC + algo en rd: DecExe no tiene el PC,
-    // por lo que se comprueba la decodificacion (opcode, rd, imm, we)
+    // auipc, jal y jalr escriben PC + algo en rd: el valor de rd no se comprueba
+    // (decodificacion: opcode, rd, imm, we). Si se comprueba el salto:
+    // pc_load y pc_target (jal: PC + imm | jalr: rs1 + imm)
     // =========================================================================
     $display("\n--- FASE 7: TIPOS U Y J ---");
 
-    // lui x10, 0x12345 -> x10 = 0x12345000
+    // lui x10, 0x12345 -> x10 = 0x12345000, no salta
     test_upper_jump({20'h12345, 5'd10, OP_LUI}, "U LUI   x10, 0x12345",
-                    5'b01101, 32'h1234_5000);
+                    5'b01101, 32'h1234_5000, 1'b0, '0);
     check_reg(5'd10, 32'h1234_5000, "U LUI   x10, 0x12345");
 
-    // auipc x11, 0x00001 -> x11 = PC + 0x1000
+    // auipc x11, 0x00001 -> x11 = PC + 0x1000, no salta
     test_upper_jump({20'h00001, 5'd11, OP_AUIPC}, "U AUIPC x11, 0x00001",
-                    5'b00101, 32'h0000_1000);
+                    5'b00101, 32'h0000_1000, 1'b0, '0);
 
     // jal x12, +16 -> {imm[20], imm[10:1], imm[11], imm[19:12], rd, opcode}
+    // salta a PC + 16 = 0x50
     test_upper_jump({1'b0, 10'b0000001000, 1'b0, 8'h00, 5'd12, OP_JAL}, "J JAL   x12, +16",
-                    5'b11011, 32'd16);
+                    5'b11011, 32'd16, 1'b1, PC_TEST + 17'd16);
 
     // jalr x13, 12(x7) -> destino del salto = x7 + 12 = 0x10C (calculado en la ALU)
     test_upper_jump({12'd12, 5'd7, 3'b000, 5'd13, OP_JALR}, "I JALR  x13, 12(x7)",
-                    5'b11001, 32'd12);
+                    5'b11001, 32'd12, 1'b1, 17'h0010C);
+
+    // jalr x13, 13(x7) -> x7 + 13 = 0x10D -> el bit 0 se pone a 0: destino 0x10C
+    test_upper_jump({12'd13, 5'd7, 3'b000, 5'd13, OP_JALR}, "I JALR  x13, 13(x7) (bit 0)",
+                    5'b11001, 32'd13, 1'b1, 17'h0010C);
     test_instr_with_regs({12'd12, 5'd7, 3'b000, 5'd13, OP_JALR}, "I JALR  destino x7 + 12",
                          5'b11001, 32'h0000_0100, 32'd0, 32'h0000_010C, 1'b0, 1'b0);
 

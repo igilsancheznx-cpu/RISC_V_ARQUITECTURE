@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 entity decoder is
     generic (
         REG_WIDTH  : integer := 32; 
-        ALU_DECOD  : integer := 4
+        ALU_DECOD  : integer := 4;
+        ADDR_WIDTH : integer := 17
     );
     port (
         clk       : in  std_logic;
@@ -23,7 +24,9 @@ entity decoder is
         aloup     : out std_logic_vector(ALU_DECOD - 1 downto 0);
         -- ENABLE FOR MEMORY
         we_b      : out std_logic;
-        be_b      : out std_logic_vector(ALU_DECOD - 1 downto 0)
+        be_b      : out std_logic_vector(ALU_DECOD - 1 downto 0);
+        -- PC Signals bifurcation
+        pc_load   : out  std_logic
     );
 end entity decoder;
 
@@ -45,6 +48,9 @@ begin
   wl      <= '1' when (opcode = "00000") else '0';
 
   sign_l  <= '1' when (opcode = "00000" and instr(14) = '0') else '0';  -- lb, lh (funct3(2) = '0') | lbu, lhu (funct3(2) = '1')
+
+  -- Activar la señal pc_load para las instrucciones de salto (jal, jalr, branch)
+  pc_load <= '1' when (opcode = "11011" or opcode = "11000" or opcode = "11001") else '0';
 
   process(opcode, instr)
     variable funct3 : std_logic_vector(2 downto 0);

@@ -58,7 +58,7 @@ begin
     -- PUERTO A
     -- =====================
 
-    -- Lectura
+    -- Lectura sincrona, read-first mode
     rdata_a <= mem(to_integer(unsigned(addr_a)));
 
     -- Escritura
@@ -74,7 +74,7 @@ begin
     -- PUERTO B
     -- =====================
 
-    -- Lectura
+    -- Lectura sincrona, read-first mode
     rdata_b <= mem(to_integer(unsigned(addr_b)));
 
     -- Escritura

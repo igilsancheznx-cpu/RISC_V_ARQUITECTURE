@@ -1,16 +1,3 @@
-BEGIN 2:1:rtl:decoder:work
-    opcode :  1:tb_writeReg:fast:work
-END 
-BEGIN 2:1:rtl:regfile:work
-    regs :  1:tb_writeReg:fast:work
-END 
-BEGIN 2:1:rtl:decexe:work
-    rs2 :  1:tb_writeReg:fast:work
-    imm :  1:tb_writeReg:fast:work
-    rdata2 :  1:tb_writeReg:fast:work
-    we :  1:tb_writeReg:fast:work
-    rs1 :  1:tb_writeReg:fast:work
-    rd :  1:tb_writeReg:fast:work
-    rdata1 :  1:tb_writeReg:fast:work
-    wAlu :  1:tb_writeReg:fast:work
+BEGIN 2:1:rtl:memory:work
+    mem :  1:tb_fetchMemory:fast:work
 END 
