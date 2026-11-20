@@ -8,7 +8,8 @@ generic(
     NUM_BYTES : integer := 4;
     ADDR_REG  : integer := 5;
     ADDR_WIDTH: integer := 17;
-    PC_RESET  : integer := 16#10000#   -- PC inicial tras el reset
+    PC_RESET  : integer := 16#10000#;  -- PC inicial tras el reset
+    DIV_ARCH  : integer := 0           -- Unidad de division: 0 = serie, 1 = paralela, 2 = segmentada
 );
 port(
     clk   : in std_logic;
@@ -44,7 +45,7 @@ architecture estructural of core is
     -- Signals for the core module
     signal pc_load   : std_logic;
     signal pc_target : std_logic_vector(ADDR_WIDTH - 1 downto 0);
-    signal ld_stall  : std_logic;   -- load en ejecucion: parada de un ciclo
+    signal ld_stall  : std_logic;   -- parada: load (un ciclo) o division (hasta que termina)
 
     -- Auxiliary signals to sincronize the instruction fetch and execution stages
     signal addr_a_sync : std_logic_vector(ADDR_WIDTH-1 downto 0);
@@ -87,7 +88,7 @@ begin
             instr_valid <= '0';               -- primer ciclo: la memoria aun no ha leido
         elsif rising_edge(clk) then
             pc_instr    <= addr_a_sync;       -- direccion que muestrea la memoria en este flanco
-            instr_valid <= not (pc_load or ld_stall);  -- salto tomado o load: se anula la siguiente
+            instr_valid <= not (pc_load or ld_stall);  -- salto tomado, load o division: se anula la siguiente
         end if;
     end process;
 
@@ -117,7 +118,8 @@ begin
        REG_WIDTH  => MEM_WIDTH,
        ADDR_REG   => ADDR_REG,
        ADDR_WIDTH => ADDR_WIDTH,
-       ALU_DECOD  => NUM_BYTES
+       ALU_DECOD  => NUM_BYTES,
+       DIV_ARCH   => DIV_ARCH
     )
     port map(
        clk       => clk,

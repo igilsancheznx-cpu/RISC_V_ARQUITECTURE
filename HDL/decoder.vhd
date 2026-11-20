@@ -26,7 +26,10 @@ entity decoder is
         we_b      : out std_logic;
         be_b      : out std_logic_vector(ALU_DECOD - 1 downto 0);
         -- PC Signals bifurcation
-        pc_load   : out  std_logic
+        pc_load   : out  std_logic;
+        -- Division (extension M: div, divu, rem, remu)
+        is_div    : out std_logic;                                 -- '1' si la instruccion es una division
+        div_op    : out std_logic_vector(1 downto 0)               -- funct3(1 downto 0): 00 div, 01 divu, 10 rem, 11 remu
     );
 end entity decoder;
 
@@ -37,7 +40,13 @@ begin
 
   opcode <= instr(6 downto 2);
 
-  we <= '1' when (opcode = "01100" or opcode = "00100" or opcode = "11001" or opcode = "01101" or opcode = "00101" or opcode = "11011") 
+  -- Division: mismo opcode que el tipo R (01100) con funct7 = 0000001 (instr(25) = '1')
+  -- y funct3(2) = '1' (div = 100, divu = 101, rem = 110, remu = 111)
+  is_div <= '1' when (opcode = "01100" and instr(25) = '1' and instr(14) = '1') else '0';
+  div_op <= instr(13 downto 12);
+
+  -- En las divisiones no se escribe el resultado de la ALU: lo escribe DecExe cuando la unidad de division activa Done
+  we <= '1' when ((opcode = "01100" and instr(25) = '0') or opcode = "00100" or opcode = "11001" or opcode = "01101" or opcode = "00101" or opcode = "11011") 
             else '0';
   
   ena_imm <= '1' when (opcode = "00100" or opcode = "00000" or opcode = "01000" or opcode = "11001" or opcode = "01101" or opcode = "00101") 

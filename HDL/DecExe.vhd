@@ -7,7 +7,10 @@ entity DecExe is
         REG_WIDTH  : integer := 32; 
         ADDR_REG   : integer := 5;
         ADDR_WIDTH : integer := 17;
-        ALU_DECOD  : integer := 4
+        ALU_DECOD  : integer := 4;
+        -- Arquitectura de la unidad de division RISCV_Div (divisor.vhd):
+        --   0 = serie, 1 = paralela, 2 = segmentada
+        DIV_ARCH   : integer := 0
     );
     port (
         clk       : in   std_logic;
@@ -83,6 +86,42 @@ architecture rtl of DecExe is
     -- Puerto de escritura del banco de registros
     signal rf_waddr    : std_logic_vector(ADDR_REG - 1 downto 0);
     signal rf_we       : std_logic;
+    signal wreg_rf     : std_logic_vector(REG_WIDTH - 1 downto 0);  -- dato que se escribe (ALU / PC o division)
+
+    -- =========================================================================
+    -- Unidad de division (div, divu, rem, remu)
+    -- =========================================================================
+    signal is_div      : std_logic;                                 -- instruccion de division en el decoder
+    signal div_op      : std_logic_vector(1 downto 0);              -- 00 div, 01 divu, 10 rem, 11 remu
+    signal div_signed  : std_logic;                                 -- div / rem (con signo)
+    signal div_a_neg   : std_logic;                                 -- dividendo negativo (solo con signo)
+    signal div_b_neg   : std_logic;                                 -- divisor negativo (solo con signo)
+    signal div_b_zero  : std_logic;                                 -- division por cero
+    signal div_a_abs   : std_logic_vector(REG_WIDTH - 1 downto 0);  -- |dividendo| hacia RISCV_Div
+    signal div_b_abs   : std_logic_vector(REG_WIDTH - 1 downto 0);  -- |divisor| hacia RISCV_Div
+    signal div_qneg    : std_logic;                                 -- hay que cambiar el signo del cociente
+    signal div_rneg    : std_logic;                                 -- hay que cambiar el signo del resto
+    signal div_valid   : std_logic;
+    signal div_ready   : std_logic;
+    signal div_done    : std_logic;
+    signal div_q       : std_logic_vector(REG_WIDTH - 1 downto 0);  -- cociente (sin signo)
+    signal div_r       : std_logic_vector(REG_WIDTH - 1 downto 0);  -- resto (sin signo)
+    -- Division en curso (serie / segmentada): datos de la instruccion guardados
+    signal div_pend    : std_logic;
+    signal div_rd_r    : std_logic_vector(ADDR_REG - 1 downto 0);
+    signal div_rem_r   : std_logic;
+    signal div_qneg_r  : std_logic;
+    signal div_rneg_r  : std_logic;
+    -- Seleccion segun la arquitectura (paralela: datos actuales; resto: guardados)
+    signal div_rem_s   : std_logic;
+    signal div_qneg_s  : std_logic;
+    signal div_rneg_s  : std_logic;
+    signal div_base    : std_logic_vector(REG_WIDTH - 1 downto 0);
+    signal div_neg     : std_logic;
+    signal div_res     : std_logic_vector(REG_WIDTH - 1 downto 0);  -- resultado final con signo
+    signal div_wr      : std_logic;                                 -- escribir el resultado en el banco
+    signal div_waddr   : std_logic_vector(ADDR_REG - 1 downto 0);
+    signal div_stall   : std_logic;                                 -- parada del procesador hasta Done
 
 begin
 
@@ -123,16 +162,103 @@ begin
     -- Dato leido alineado al byte 0 (lb/lh/lbu/lhu en direcciones no multiplo de 4)
     ld_data <= std_logic_vector(shift_right(unsigned(rdata_b), 8 * ld_off_r));
 
-    -- Parada: el load ocupa un ciclo mas mientras llega el dato
-    ld_stall <= wl;
+    -- Parada: el load ocupa un ciclo mas; la division (serie / segmentada) para
+    -- el procesador hasta que la unidad de division activa Done
+    ld_stall <= wl or div_stall;
 
     -- Puerto de escritura del banco de registros:
     --   ciclo de write-back de un load -> rd del load con el dato de memoria
+    --   ciclo en que termina una division -> rd de la division con su resultado
     --   resto                          -> rd de la instruccion en ejecucion (ALU / PC)
-    -- Durante el write-back del load el decoder tiene una burbuja (NOP), cuya
-    -- escritura se inhibe
-    rf_waddr <= ld_rd_r when ld_wl_r = '1' else rd;
-    rf_we    <= we and not ld_wl_r;
+    -- Durante el write-back del load o de la division el decoder tiene una
+    -- burbuja (NOP), cuya escritura se inhibe
+    rf_waddr <= ld_rd_r   when ld_wl_r = '1' else
+                div_waddr when div_wr  = '1' else
+                rd;
+    rf_we    <= (we or div_wr) and not ld_wl_r;
+    wreg_rf  <= div_res when div_wr = '1' else wreg_data;
+
+    -- =========================================================================
+    -- UNIDAD DE DIVISION
+    -- RISCV_Div divide numeros sin signo. En div / rem se le pasan los valores
+    -- absolutos y despues se corrige el signo:
+    --   cociente : negativo si los signos de los operandos son distintos
+    --              (division por cero: el cociente es -1 = todo unos, sin cambiar el signo)
+    --   resto    : con el signo del dividendo
+    -- =========================================================================
+    div_signed <= not div_op(0);
+    div_a_neg  <= div_signed and rdata1(REG_WIDTH - 1);
+    div_b_neg  <= div_signed and rdata2(REG_WIDTH - 1);
+    div_b_zero <= '1' when unsigned(rdata2) = 0 else '0';
+    div_a_abs  <= std_logic_vector(unsigned(not rdata1) + 1) when div_a_neg = '1' else rdata1;
+    div_b_abs  <= std_logic_vector(unsigned(not rdata2) + 1) when div_b_neg = '1' else rdata2;
+    div_qneg   <= (div_a_neg xor div_b_neg) and not div_b_zero;
+    div_rneg   <= div_a_neg;
+
+    -- Nueva division: la instruccion esta en el decoder y no hay otra en curso
+    div_valid  <= is_div and not div_pend;
+
+    -- Division en curso (serie y segmentada): se guardan rd y la correccion de signo
+    -- en el flanco en que la unidad acepta la division (Valid y Ready). Done solo se
+    -- mira a partir del ciclo siguiente (div_pend = '1'): en el mismo ciclo del Valid
+    -- todavia puede tener el valor de la division anterior
+    process(clk, nRst)
+    begin
+      if nRst = '0' then
+        div_pend   <= '0';
+        div_rd_r   <= (others => '0');
+        div_rem_r  <= '0';
+        div_qneg_r <= '0';
+        div_rneg_r <= '0';
+      elsif rising_edge(clk) then
+        if DIV_ARCH /= 1 then
+          if div_valid = '1' and div_ready = '1' then
+            div_pend   <= '1';
+            div_rd_r   <= rd;
+            div_rem_r  <= div_op(1);
+            div_qneg_r <= div_qneg;
+            div_rneg_r <= div_rneg;
+          elsif div_pend = '1' and div_done = '1' then
+            div_pend   <= '0';            -- resultado escrito en este flanco
+          end if;
+        end if;
+      end if;
+    end process;
+
+    -- Paralela: el resultado sale en el mismo ciclo y se escribe como una operacion
+    -- de la ALU. Serie / segmentada: se escribe en el ciclo en que se activa Done
+    div_rem_s  <= div_op(1) when DIV_ARCH = 1 else div_rem_r;
+    div_qneg_s <= div_qneg  when DIV_ARCH = 1 else div_qneg_r;
+    div_rneg_s <= div_rneg  when DIV_ARCH = 1 else div_rneg_r;
+    div_base   <= div_r      when div_rem_s = '1' else div_q;
+    div_neg    <= div_rneg_s when div_rem_s = '1' else div_qneg_s;
+    div_res    <= std_logic_vector(unsigned(not div_base) + 1) when div_neg = '1' else div_base;
+
+    div_wr     <= is_div when DIV_ARCH = 1 else (div_pend and div_done);
+    div_waddr  <= rd     when DIV_ARCH = 1 else div_rd_r;
+
+    -- Parada (serie / segmentada): desde el ciclo de la division hasta que llega Done.
+    -- El fetch mantiene el PC y las instrucciones siguientes se anulan (burbujas)
+    div_stall  <= '0' when DIV_ARCH = 1 else
+                  (is_div and not div_pend) or (div_pend and not div_done);
+
+    gen_div_serie: if DIV_ARCH = 0 generate
+      UD: entity work.RISCV_Div(serie)
+      port map(Clk => clk, Dividendo => div_a_abs, Divisor => div_b_abs, Valid => div_valid,
+               Cociente => div_q, Resto => div_r, Ready => div_ready, Done => div_done);
+    end generate;
+
+    gen_div_paralela: if DIV_ARCH = 1 generate
+      UD: entity work.RISCV_Div(paralela)
+      port map(Clk => clk, Dividendo => div_a_abs, Divisor => div_b_abs, Valid => div_valid,
+               Cociente => div_q, Resto => div_r, Ready => div_ready, Done => div_done);
+    end generate;
+
+    gen_div_segmentada: if DIV_ARCH = 2 generate
+      UD: entity work.RISCV_Div(segmentada)
+      port map(Clk => clk, Dividendo => div_a_abs, Divisor => div_b_abs, Valid => div_valid,
+               Cociente => div_q, Resto => div_r, Ready => div_ready, Done => div_done);
+    end generate;
 
     -- Salidas de depuracion
     dbg_rdata1 <= rdata1;
@@ -191,7 +317,7 @@ begin
         wl        => ld_wl_r,      -- el dato del load se escribe un ciclo despues
         be_l      => ld_be_r,
         sign_l    => ld_sign_r,
-        wreg      => wreg_data,
+        wreg      => wreg_rf,
         wdata     => ld_data,
         dbg_regs  => dbg_regs
     );
@@ -219,7 +345,9 @@ begin
         ena_imm   => ena_imm,
         we_b      => aux_we_b,
         be_b      => aux_be_b,
-        pc_load   => dec_pc_load
+        pc_load   => dec_pc_load,
+        is_div    => is_div,
+        div_op    => div_op
       );
 
     -- Disenar un multiplexor para elegir imm o rdata2 depende de la aloup (INSTR I)
