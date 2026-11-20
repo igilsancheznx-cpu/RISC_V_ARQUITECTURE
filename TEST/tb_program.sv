@@ -3,8 +3,8 @@
 // =============================================================================
 // tb_program
 // Simulacion de un programa RV32I completo (121 instrucciones) sobre el
-// procesador (core = fetch + DecExe) conectado al agente de memoria
-// (TEST/mem_agent.sv, mismo comportamiento que memory.vhd).
+// procesador (core = fetch + DecExe) conectado a la memoria RTL del proyecto
+// (HDL/memory.vhd). El programa se carga por el puerto A con el core en reset.
 //
 // El programa cubre todos los tipos de instruccion:
 //   0x10000-0x100A8 : U (lui, auipc) + ALU tipo I y tipo R, firma XOR en x22 / x23
@@ -90,10 +90,26 @@ module tb_program;
   logic                  we_a,    we_b;
   logic [NUM_BYTES-1:0]  be_a,    be_b;
 
+  // Puertos de la memoria: el testbench controla el puerto A durante la carga
+  // del programa (core en reset) y el core los controla despues.
   // Memoria direccionada por palabras: direccion de byte -> addr[ADDR_WIDTH-1:2]
+  logic                  load_en;
+  logic [ADDR_WIDTH-1:0] tb_addr;
+  logic [MEM_WIDTH-1:0]  tb_wdata;
+  logic                  tb_we;
   logic [ADDR_WIDTH-1:0] mem_addr_a, mem_addr_b;
-  assign mem_addr_a = {2'b00, addr_a[ADDR_WIDTH-1:2]};
-  assign mem_addr_b = {2'b00, addr_b[ADDR_WIDTH-1:2]};
+  logic [MEM_WIDTH-1:0]  mem_wdata_a, mem_wdata_b;
+  logic                  mem_we_a, mem_we_b;
+  logic [NUM_BYTES-1:0]  mem_be_a, mem_be_b;
+
+  assign mem_addr_a  = load_en ? tb_addr  : {2'b00, addr_a[ADDR_WIDTH-1:2]};
+  assign mem_wdata_a = load_en ? tb_wdata : wdata_a;
+  assign mem_we_a    = load_en ? tb_we    : we_a;
+  assign mem_be_a    = load_en ? 4'b1111  : be_a;
+  assign mem_addr_b  = load_en ? '0       : {2'b00, addr_b[ADDR_WIDTH-1:2]};
+  assign mem_wdata_b = load_en ? '0       : wdata_b;
+  assign mem_we_b    = load_en ? 1'b0     : we_b;
+  assign mem_be_b    = load_en ? '0       : be_b;
 
   // Monitorizacion jerarquica de DecExe
   wire [MEM_WIDTH-1:0]  mon_rdata1    = dut.U1.rdata1;
@@ -116,7 +132,7 @@ module tb_program;
   // PC de la instruccion presente en rdata_a: la memoria es sincrona, asi que
   // es la direccion que muestreo en el ultimo flanco de subida
   logic [31:0] dec_pc;
-  always @(posedge clk) dec_pc <= {15'b0, addr_a[ADDR_WIDTH-1:2], 2'b00};
+  always @(posedge clk) dec_pc <= {15'b0, mem_addr_a[ADDR_WIDTH-3:0], 2'b00};
 
   // ---------------------------------------------------------------------------
   // DUT y memoria
@@ -145,23 +161,23 @@ module tb_program;
     .be_b    (be_b)
   );
 
-  mem_agent #(
+  // Memoria RTL del proyecto (HDL/memory.vhd)
+  memory #(
     .MEM_WIDTH  (MEM_WIDTH),
     .NUM_BYTES  (NUM_BYTES),
-    .ADDR_WIDTH (ADDR_WIDTH),
-    .VERBOSE    (0)
+    .ADDR_WIDTH (ADDR_WIDTH)
   ) u_mem (
     .clk     (clk),
     .addr_a  (mem_addr_a),
-    .wdata_a (wdata_a),
+    .wdata_a (mem_wdata_a),
     .rdata_a (rdata_a),
-    .we_a    (we_a),
-    .be_a    (be_a),
+    .we_a    (mem_we_a),
+    .be_a    (mem_be_a),
     .addr_b  (mem_addr_b),
-    .wdata_b (wdata_b),
+    .wdata_b (mem_wdata_b),
     .rdata_b (rdata_b),
-    .we_b    (we_b),
-    .be_b    (be_b)
+    .we_b    (mem_we_b),
+    .be_b    (mem_be_b)
   );
 
   // Reloj de 10 ns
@@ -507,11 +523,33 @@ module tb_program;
     return e;
   endfunction
 
+  // El modelo parte del contenido real de memory.vhd tras la carga (programa
+  // cargado + contenido inicial propio de la memoria, p. ej. su programa de
+  // ejemplo en las palabras 0..9)
   task automatic model_reset();
     foreach (m_x[k])   m_x[k]   = 32'h0;
-    foreach (m_mem[k]) m_mem[k] = 32'h0;
-    for (int k = 0; k < PROG_WORDS; k++) m_mem[word_idx(PROG_BASE) + k] = prog[k];
+    for (int k = 0; k < DEPTH; k++) m_mem[k] = u_mem.mem[k];
     m_pc = PROG_BASE;
+  endtask
+
+  // Carga del programa por el puerto A de memory.vhd (el core esta en reset)
+  task automatic load_memory();
+    load_en = 1'b1;
+    tb_we   = 1'b1;
+    for (int k = 0; k < PROG_WORDS; k++) begin
+      @(negedge clk);
+      tb_addr  = word_idx(PROG_BASE) + k;
+      tb_wdata = prog[k];
+    end
+    @(negedge clk);       // la ultima palabra se escribe en el flanco anterior
+    tb_we   = 1'b0;
+    load_en = 1'b0;
+    for (int k = 0; k < PROG_WORDS; k++)
+      if (u_mem.mem[word_idx(PROG_BASE) + k] !== prog[k])
+        fail("CARGA", $sformatf("mem[0x%05H] = 0x%08H, esperado 0x%08H",
+                                PROG_BASE + 4*k, u_mem.mem[word_idx(PROG_BASE) + k], prog[k]));
+    $display("  [CARGA] %0d instrucciones escritas por el puerto A en 0x%05H..0x%05H",
+             PROG_WORDS, PROG_BASE, PROG_BASE + 4*(PROG_WORDS-1));
   endtask
 
   // ---------------------------------------------------------------------------
@@ -876,13 +914,15 @@ module tb_program;
     n_checked = 0;
     foreach (pend_load[k]) pend_load[k] = 0;
 
-    build_program();
-    golden_run();
+    load_en   = 1'b1;
+    tb_we     = 1'b0;
+    tb_addr   = '0;
+    tb_wdata  = '0;
 
-    // Carga del programa por backdoor y modelo en el estado inicial
-    // Se borra el contenido inicial del agente (programa de ejemplo de memory.vhd)
-    foreach (u_mem.mem[k]) u_mem.mem[k] = 32'h0;
-    for (int k = 0; k < PROG_WORDS; k++) u_mem.backdoor_write(word_idx(PROG_BASE) + k, prog[k]);
+    // Carga del programa en memory.vhd, ejecucion golden y modelo en el estado inicial
+    build_program();
+    load_memory();
+    golden_run();
     model_reset();
 
     repeat (3) @(posedge clk);

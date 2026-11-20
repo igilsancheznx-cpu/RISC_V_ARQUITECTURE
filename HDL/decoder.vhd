@@ -26,7 +26,9 @@ entity decoder is
         we_b      : out std_logic;
         be_b      : out std_logic_vector(ALU_DECOD - 1 downto 0);
         -- PC Signals bifurcation
-        pc_load   : out  std_logic
+        pc_load   : out  std_logic;
+        -- Extension M: div, divu, rem, remu (opcode R, funct7 = 0000001, funct3(2) = '1')
+        div_op    : out  std_logic
     );
 end entity decoder;
 
@@ -37,8 +39,12 @@ begin
 
   opcode <= instr(6 downto 2);
 
-  we <= '1' when (opcode = "01100" or opcode = "00100" or opcode = "11001" or opcode = "01101" or opcode = "00101" or opcode = "11011") 
+  -- Las instrucciones de la extension M (funct7(0) = instr(25) = '1') no escriben
+  -- el resultado de la ALU: la division lo escribe por su propio puerto al terminar
+  we <= '1' when ((opcode = "01100" and instr(25) = '0') or opcode = "00100" or opcode = "11001" or opcode = "01101" or opcode = "00101" or opcode = "11011")
             else '0';
+
+  div_op <= '1' when (opcode = "01100" and instr(25) = '1' and instr(14) = '1') else '0';
   
   ena_imm <= '1' when (opcode = "00100" or opcode = "00000" or opcode = "01000" or opcode = "11001" or opcode = "01101" or opcode = "00101") 
             else '0';

@@ -8,7 +8,8 @@ generic(
     NUM_BYTES : integer := 4;
     ADDR_REG  : integer := 5;
     ADDR_WIDTH: integer := 17;
-    PC_RESET  : integer := 16#10000#   -- PC inicial tras el reset
+    PC_RESET  : integer := 16#10000#;  -- PC inicial tras el reset
+    DIV_ARCH  : integer := 0           -- unidad de division: 0 serie, 1 paralela, 2 segmentada, 3 sin divisor
 );
 port(
     clk   : in std_logic;
@@ -53,6 +54,14 @@ architecture estructural of core is
     signal pc_instr    : std_logic_vector(ADDR_WIDTH - 1 downto 0);
     signal instr_valid : std_logic;
     signal instr_dec   : std_logic_vector(MEM_WIDTH - 1 downto 0);
+    --   dec_hold    : DecExe retiene la instruccion del decoder (no se ejecuta):
+    --                 division serie en curso o riesgo con una division pendiente
+    --   replay      : en este ciclo se repite la instruccion retenida (instr_r),
+    --                 con su PC; el fetch mantiene el PC mientras tanto
+    signal dec_hold    : std_logic;
+    signal replay      : std_logic;
+    signal instr_r     : std_logic_vector(MEM_WIDTH - 1 downto 0);
+    signal fetch_hold  : std_logic;
 
 begin
     -- Puerto A: solo lectura de instrucciones
@@ -73,13 +82,26 @@ begin
         if nRst = '0' then
             pc_instr    <= std_logic_vector(to_unsigned(PC_RESET, ADDR_WIDTH));
             instr_valid <= '0';               -- primer ciclo: la memoria aun no ha leido
+            replay      <= '0';
+            instr_r     <= NOP;
         elsif rising_edge(clk) then
-            pc_instr    <= addr_a_sync;       -- direccion que muestrea la memoria en este flanco
-            instr_valid <= not (pc_load or ld_stall);  -- salto tomado o load: se anula la siguiente
+            if dec_hold = '1' then
+                replay  <= '1';               -- se repite la instruccion retenida
+                instr_r <= instr_dec;         -- (pc_instr se mantiene)
+            else
+                replay      <= '0';
+                pc_instr    <= addr_a_sync;   -- direccion que muestrea la memoria en este flanco
+                instr_valid <= not (pc_load or ld_stall);  -- salto tomado o load: se anula la siguiente
+            end if;
         end if;
     end process;
 
-    instr_dec <= rdata_a when instr_valid = '1' else NOP;
+    instr_dec <= instr_r when replay = '1' else
+                 rdata_a when instr_valid = '1' else
+                 NOP;
+
+    -- El fetch no avanza durante un load ni mientras se retiene una instruccion
+    fetch_hold <= ld_stall or dec_hold;
 
     U0: entity work.fetch(rtl)
     generic map(
@@ -91,7 +113,7 @@ begin
         nRst      => nRst,
         pc_load   => pc_load,
         pc_target => pc_target,
-        pc_hold   => ld_stall,
+        pc_hold   => fetch_hold,
         pc_out    => addr_a_sync
     );
 
@@ -100,7 +122,8 @@ begin
        REG_WIDTH  => MEM_WIDTH,
        ADDR_REG   => ADDR_REG,
        ADDR_WIDTH => ADDR_WIDTH,
-       ALU_DECOD  => NUM_BYTES
+       ALU_DECOD  => NUM_BYTES,
+       DIV_ARCH   => DIV_ARCH
     )
     port map(
        clk       => clk,
@@ -114,7 +137,8 @@ begin
        pc_out    => pc_instr,                -- PC de la instruccion (no el del fetch)
        pc_load   => pc_load,
        pc_target => pc_target,
-       ld_stall  => ld_stall
+       ld_stall  => ld_stall,
+       dec_hold  => dec_hold
     );
 
 end estructural;

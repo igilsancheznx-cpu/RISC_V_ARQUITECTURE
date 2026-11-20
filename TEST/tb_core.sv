@@ -25,9 +25,9 @@
 // salto tomado se colocan instrucciones "trampa" (addi x31, x31, 1): si alguna
 // se ejecuta, x31 deja de valer 0 y se detecta en la FASE 8.
 //
-// La memoria es por defecto el agente TEST/mem_agent.sv (mismo comportamiento
-// que memory.vhd + monitor y comprobaciones). Para usar la memoria RTL:
-//   vlog -sv +define+USE_RTL_MEM tb_core.sv
+// La memoria es por defecto la RTL del proyecto (HDL/memory.vhd). Para usar el
+// agente TEST/mem_agent.sv (mismo comportamiento + monitor y comprobaciones):
+//   vlog -sv +define+USE_MEM_AGENT TEST/mem_agent.sv tb_core.sv
 //
 // El programa se carga a partir de PROG_BASE = 0x10000 (PC_RESET del core). Los
 // PC que aparecen en las tareas y en los mensajes son relativos a PROG_BASE.
@@ -149,9 +149,9 @@ module tb_core;
   );
 
   // Instancia de la memoria
-  //   por defecto : agente de memoria en SystemVerilog (TEST/mem_agent.sv)
-  //   +define+USE_RTL_MEM : memoria RTL (HDL/memory.vhd)
-`ifdef USE_RTL_MEM
+  //   por defecto           : memoria RTL del proyecto (HDL/memory.vhd)
+  //   +define+USE_MEM_AGENT : agente de memoria en SystemVerilog (TEST/mem_agent.sv)
+`ifndef USE_MEM_AGENT
   memory #(
     .MEM_WIDTH  (MEM_WIDTH),
     .NUM_BYTES  (NUM_BYTES),
@@ -332,7 +332,7 @@ module tb_core;
   // ---------------------------------------------------------------------------
   task automatic load_memory();
     begin
-`ifndef USE_RTL_MEM
+`ifdef USE_MEM_AGENT
       // Agente: carga por backdoor (sin consumir ciclos)
       for (int i = 0; i < PROG_WORDS; i++) u_mem.backdoor_write((PROG_BASE >> 2) + i, prog[i]);
       u_mem.backdoor_write(DATA_BASE >> 2, DATA_INIT);
@@ -678,7 +678,7 @@ module tb_core;
       check_mem(DATA_BASE,     DATA_INIT,     "FINAL dato",  1);
       check_mem(DATA_BASE + 4, 32'h0000_0078, "FINAL sb",    1);
       check_mem(DATA_BASE + 8, 32'h0000_5678, "FINAL sh",    1);
-`ifndef USE_RTL_MEM
+`ifdef USE_MEM_AGENT
       u_mem.dump((DATA_BASE >> 2) - 1, (DATA_BASE >> 2) + 2);
       u_mem.report();
 `endif

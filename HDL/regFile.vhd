@@ -25,7 +25,13 @@ entity regFile is
         wl        : in  std_logic; -- Write back from memory 
         be_l      : in  std_logic_vector(3 downto 0); -- Byte enable for write back
         sign_l    : in  std_logic; -- Load con signo (lb, lh): '1' extiende signo, '0' extiende con ceros
-        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
+        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0);  -- Write from MEMORY
+        -- Segundo puerto de escritura: resultado de la unidad de division.
+        -- En la arquitectura segmentada la division termina mientras se ejecuta
+        -- otra instruccion, que puede estar usando el puerto principal
+        we2       : in  std_logic := '0';
+        waddr2    : in  std_logic_vector(ADDR_REG - 1 downto 0)  := (others => '0');
+        wdata2    : in  std_logic_vector(REG_WIDTH - 1 downto 0) := (others => '0')
     );
 end entity regFile;
 
@@ -81,6 +87,11 @@ begin
               end if;
             else
               regs(waddr_d) <= (others => '0');
+            end if;
+
+            -- Escritura del resultado de una division (segundo puerto, nunca en x0)
+            if we2 = '1' and unsigned(waddr2) /= 0 then
+              regs(to_integer(unsigned(waddr2))) <= wdata2;
             end if;
         end if;
     end process;
