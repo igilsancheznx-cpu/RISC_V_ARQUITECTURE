@@ -6,17 +6,22 @@
 // memoria de doble puerto (memory.vhd).
 //
 //   FASE 1: con el fetch en reset, el testbench escribe 20 instrucciones RV32I
-//           en las posiciones 0..19 de la memoria por el puerto A y comprueba
-//           que han quedado guardadas
+//           a partir de PC_RESET (0x10000, palabra 0x4000) por el puerto A y
+//           comprueba que han quedado guardadas. Durante el reset PC = PC_RESET
 //   FASE 2: se suelta el reset y el contador de programa cuenta 20 veces
-//           (PC = 0x04, 0x08, ... 0x50, sin saltos: pc_load = 0)
+//           (PC = 0x10004, 0x10008, ... 0x10050, sin saltos: pc_load = 0)
 //           En cada cuenta se comprueba:
 //             - pc_out = PC anterior + 4
 //             - rdata_a = instruccion de la posicion que se acaba de leer
-//   FASE 3: resumen (cuentas, instrucciones leidas, errores)
+//   FASE 3: salto y parada
+//             - pc_load = 1 : el PC carga pc_target (salto a PC_RESET + 0x08)
+//             - pc_hold = 1 : el PC no avanza y la memoria vuelve a leer la
+//                             misma instruccion (parada de los loads)
+//             - pc_hold = 0 : el PC vuelve a contar
+//   FASE 4: resumen (cuentas, instrucciones leidas, errores)
 //
 // Temporizacion (lectura sincrona de la memoria):
-//   flanco n: pc_out pasa de 4(n-1) a 4n y rdata_a <= mem[n-1]
+//   flanco n: pc_out pasa de PC_RESET+4(n-1) a PC_RESET+4n y rdata_a <= instruccion n-1
 //   -> la instruccion leida va un ciclo por detras del PC.
 //
 // La memoria se direcciona por palabras y el fetch genera direcciones de byte,
@@ -28,7 +33,9 @@ module tb_fetchMemory;
   localparam int NUM_BYTES  = 4;
   localparam int ADDR_WIDTH = 17;
 
-  localparam int N_INSTR = 20; // instrucciones cargadas = cuentas del PC
+  localparam int N_INSTR  = 20;        // instrucciones cargadas = cuentas del PC
+  localparam int PC_RESET = 'h10000;   // PC tras el reset (generic del fetch)
+  localparam int BASE     = PC_RESET / 4;  // palabra de memoria de la primera instruccion
 
   // Opcodes RV32I (7 bits)
   localparam logic [6:0] OP_R      = 7'b0110011;
@@ -46,6 +53,7 @@ module tb_fetchMemory;
 
   // Puertos del fetch
   logic                  pc_load;
+  logic                  pc_hold;
   logic [ADDR_WIDTH-1:0] pc_target;
   logic [ADDR_WIDTH-1:0] pc_out;
 
@@ -81,12 +89,14 @@ module tb_fetchMemory;
   // DUT: fetch + memoria
   // ---------------------------------------------------------------------------
   fetch #(
-    .ADDR_WIDTH(ADDR_WIDTH)
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .PC_RESET  (PC_RESET)
   ) dut (
     .clk      (clk),
     .nRst     (nRst),
     .pc_load  (pc_load),
     .pc_target(pc_target),
+    .pc_hold  (pc_hold),
     .pc_out   (pc_out)
   );
 
@@ -180,7 +190,7 @@ module tb_fetchMemory;
     load_en = 1'b1;
     for (int i = 0; i < N_INSTR; i++) begin
       @(negedge clk);
-      tb_addr  = i;
+      tb_addr  = BASE + i;
       tb_wdata = prog[i];
       tb_we    = 1'b1;
     end
@@ -191,12 +201,13 @@ module tb_fetchMemory;
 
     // Comprobacion del contenido escrito (lectura directa del array de la memoria)
     for (int i = 0; i < N_INSTR; i++) begin
-      if (u_mem.mem[i] !== prog[i]) begin
-        $error("CARGA: mem[%0d] = 0x%08H, esperado 0x%08H", i, u_mem.mem[i], prog[i]);
+      if (u_mem.mem[BASE + i] !== prog[i]) begin
+        $error("CARGA: mem[0x%04H] = 0x%08H, esperado 0x%08H", BASE + i, u_mem.mem[BASE + i], prog[i]);
         errors++;
       end
     end
-    $display("  Cargadas %0d instrucciones en mem[0..%0d]", N_INSTR, N_INSTR-1);
+    $display("  Cargadas %0d instrucciones en mem[0x%04H..0x%04H] (PC 0x%05H..0x%05H)",
+             N_INSTR, BASE, BASE + N_INSTR - 1, PC_RESET, PC_RESET + 4*(N_INSTR-1));
     load_en = 1'b0;
   endtask
 
@@ -207,7 +218,7 @@ module tb_fetchMemory;
   task automatic check_count(input int n);
     logic [ADDR_WIDTH-1:0] exp_pc;
     logic [31:0]           exp_instr;
-    exp_pc    = 4 * n;
+    exp_pc    = PC_RESET + 4 * n;
     exp_instr = prog[n-1];
 
     if (pc_out !== exp_pc) begin
@@ -215,14 +226,43 @@ module tb_fetchMemory;
       errors++;
     end
     if (rdata_a !== exp_instr) begin
-      $error("CUENTA %0d: rdata_a = 0x%08H, esperado mem[%0d] = 0x%08H",
-             n, rdata_a, n-1, exp_instr);
+      $error("CUENTA %0d: rdata_a = 0x%08H, esperado mem[0x%04H] = 0x%08H",
+             n, rdata_a, BASE + n - 1, exp_instr);
       errors++;
     end else begin
       instr_ok++;
     end
-    $display("  Cuenta %2d: PC = 0x%05H | instruccion leida mem[%2d] (PC 0x%05H) = 0x%08H %s",
-             n, pc_out, n-1, 4*(n-1), rdata_a,
+    $display("  Cuenta %2d: PC = 0x%05H | instruccion leida mem[0x%04H] (PC 0x%05H) = 0x%08H %s",
+             n, pc_out, BASE + n - 1, PC_RESET + 4*(n-1), rdata_a,
+             (pc_out === exp_pc && rdata_a === exp_instr) ? "OK" : "FALLO");
+  endtask
+
+  // ---------------------------------------------------------------------------
+  // Un ciclo de la FASE 3: aplica pc_load / pc_hold, da un flanco y comprueba
+  // el PC y la instruccion leida (la de la direccion que habia antes del flanco)
+  // ---------------------------------------------------------------------------
+  task automatic check_step(
+    input string                 name,
+    input logic                  load,
+    input logic                  hold,
+    input logic [ADDR_WIDTH-1:0] target,
+    input logic [ADDR_WIDTH-1:0] exp_pc,
+    input logic [31:0]           exp_instr
+  );
+    pc_load   = load;
+    pc_hold   = hold;
+    pc_target = target;
+    @(posedge clk);
+    @(negedge clk);
+    if (pc_out !== exp_pc) begin
+      $error("%s: pc_out = 0x%05H, esperado 0x%05H", name, pc_out, exp_pc);
+      errors++;
+    end
+    if (rdata_a !== exp_instr) begin
+      $error("%s: rdata_a = 0x%08H, esperado 0x%08H", name, rdata_a, exp_instr);
+      errors++;
+    end
+    $display("  %-28s: PC = 0x%05H | instruccion leida = 0x%08H %s", name, pc_out, rdata_a,
              (pc_out === exp_pc && rdata_a === exp_instr) ? "OK" : "FALLO");
   endtask
 
@@ -236,6 +276,7 @@ module tb_fetchMemory;
     instr_ok  = 0;
     nRst      = 1'b0;
     pc_load   = 1'b0;
+    pc_hold   = 1'b0;
     pc_target = '0;
     load_en   = 1'b1;
     tb_addr   = '0;
@@ -248,11 +289,12 @@ module tb_fetchMemory;
     $display("--- FASE 1: carga de la memoria (fetch en reset) ---");
     load_memory();
 
-    // Durante el reset el PC debe valer 0
-    if (pc_out !== '0) begin
-      $error("RESET: pc_out = 0x%05H, esperado 0x00000", pc_out);
+    // Durante el reset el PC debe valer PC_RESET
+    if (pc_out !== PC_RESET[ADDR_WIDTH-1:0]) begin
+      $error("RESET: pc_out = 0x%05H, esperado 0x%05H", pc_out, PC_RESET);
       errors++;
-    end
+    end else
+      $display("  Reset: PC = 0x%05H OK", pc_out);
 
     // ===================== FASE 2 =====================
     $display("--- FASE 2: %0d cuentas del contador de programa ---", N_INSTR);
@@ -266,7 +308,18 @@ module tb_fetchMemory;
     end
 
     // ===================== FASE 3 =====================
-    $display("--- FASE 3: resumen ---");
+    // Al acabar la FASE 2 el PC vale PC_RESET + 0x50 (fuera del programa: mem = 0)
+    $display("--- FASE 3: salto (pc_load) y parada (pc_hold) ---");
+    check_step("Salto a PC_RESET + 0x08",   1'b1, 1'b0, PC_RESET + 'h08, PC_RESET + 'h08, 32'h0);
+    check_step("Parada 1 (pc_hold)",        1'b0, 1'b1, '0,              PC_RESET + 'h08, prog[2]);
+    check_step("Parada 2 (pc_hold)",        1'b0, 1'b1, '0,              PC_RESET + 'h08, prog[2]);
+    check_step("Fin de parada",             1'b0, 1'b0, '0,              PC_RESET + 'h0C, prog[2]);
+    check_step("Cuenta normal",             1'b0, 1'b0, '0,              PC_RESET + 'h10, prog[3]);
+    check_step("pc_load prioritario a hold",1'b1, 1'b1, PC_RESET + 'h40, PC_RESET + 'h40, prog[4]);
+    check_step("Cuenta tras el salto",      1'b0, 1'b0, '0,              PC_RESET + 'h44, prog[16]);
+
+    // ===================== FASE 4 =====================
+    $display("--- FASE 4: resumen ---");
     $display("  Cuentas del PC       : %0d (PC final = 0x%05H)", pc_counts, pc_out);
     $display("  Instrucciones leidas : %0d / %0d correctas", instr_ok, N_INSTR);
     if (errors == 0)

@@ -21,7 +21,10 @@ entity DecExe is
         -- PC Signals bifurcation
         pc_out    : in   std_logic_vector(ADDR_WIDTH - 1 downto 0);
         pc_load   : out  std_logic;
-        pc_target : out  std_logic_vector(ADDR_WIDTH - 1 downto 0)
+        pc_target : out  std_logic_vector(ADDR_WIDTH - 1 downto 0);
+        -- Load en ejecucion: el core debe parar un ciclo (fetch mantiene el PC y
+        -- la instruccion siguiente se anula) mientras el dato llega de memoria
+        ld_stall  : out  std_logic
     );
 end entity DecExe;
 
@@ -56,36 +59,84 @@ architecture rtl of DecExe is
     -- Signal auxiliar for branches
     signal dec_pc_load : std_logic;  -- pc_load del decoder (jal, jalr y branch sin condición)
     signal br_taken    : std_logic;  -- Condición del branch cumplida (según funct3 y flags de la ALU)
+    -- Dato a escribir en rd (ALU, PC + 4 o PC + imm)
+    signal pc_ext      : unsigned(REG_WIDTH - 1 downto 0);       -- PC de la instruccion extendido a 32 bits
+    signal wreg_data   : std_logic_vector(REG_WIDTH - 1 downto 0);
+    -- Acceso a memoria de datos
+    signal byte_off    : natural range 0 to 3;                      -- desplazamiento de byte (addr(1:0))
+    -- Write-back de los loads (un ciclo despues de presentar la direccion)
+    signal ld_wl_r     : std_logic;                                 -- hay que escribir el dato del load
+    signal ld_rd_r     : std_logic_vector(ADDR_REG - 1 downto 0);   -- registro destino del load
+    signal ld_be_r     : std_logic_vector(3 downto 0);              -- bytes validos (lb/lh/lw)
+    signal ld_sign_r   : std_logic;                                 -- extension de signo (lb/lh)
+    signal ld_off_r    : natural range 0 to 3;                      -- desplazamiento de byte del load
+    signal ld_data     : std_logic_vector(REG_WIDTH - 1 downto 0);  -- dato de memoria alineado al byte 0
+    -- Puerto de escritura del banco de registros
+    signal rf_waddr    : std_logic_vector(ADDR_REG - 1 downto 0);
+    signal rf_we       : std_logic;
 
 begin
 
-  process(clk, nRst)
-  begin
-    if nRst = '0' then
-      addr_b  <= (others => '0');   
-      wdata_b <= (others => '0');    
-      we_b    <= '0';  
-      be_b    <= (others => '0');
+    -- =========================================================================
+    -- MEMORIA DE DATOS (puerto B)
+    -- La memoria es sincrona: la direccion se presenta en el ciclo de ejecucion
+    -- (combinacional) y la memoria la muestrea en el flanco que cierra el ciclo.
+    --   store : la memoria escribe en ese mismo flanco
+    --   load  : el dato esta en rdata_b durante el ciclo siguiente
+    -- Los accesos de byte / media palabra se colocan en su carril segun addr(1:0)
+    -- =========================================================================
+    byte_off <= to_integer(unsigned(wAlu(1 downto 0))) when not is_x(wAlu(1 downto 0)) else 0;
 
-    elsif clk'event and clk = '1' then
-      if aux_we_b = '1' then
-        addr_b  <= wAlu(ADDR_WIDTH - 1 downto 0);
-        wdata_b <= rdata2;
-        we_b    <= aux_we_b;
-        be_b    <= aux_be_b;
-      else
-        addr_b  <= (others => '0');   
-        wdata_b <= (others => '0');    
-        we_b    <= '0';  
-        be_b    <= (others => '0');
+    addr_b  <= wAlu(ADDR_WIDTH - 1 downto 0);
+    wdata_b <= std_logic_vector(shift_left(unsigned(rdata2), 8 * byte_off));
+    we_b    <= aux_we_b;
+    be_b    <= std_logic_vector(shift_left(unsigned(aux_be_b), byte_off));
 
+    -- Control del write-back de los loads: se registra en el flanco en el que la
+    -- memoria muestrea la direccion y se escribe en rd en el flanco siguiente
+    process(clk, nRst)
+    begin
+      if nRst = '0' then
+        ld_wl_r   <= '0';
+        ld_rd_r   <= (others => '0');
+        ld_be_r   <= (others => '0');
+        ld_sign_r <= '0';
+        ld_off_r  <= 0;
+      elsif rising_edge(clk) then
+        ld_wl_r   <= wl;
+        ld_rd_r   <= rd;
+        ld_be_r   <= be_l;
+        ld_sign_r <= sign_l;
+        ld_off_r  <= byte_off;
       end if;
-    end if;
-  end process;
+    end process;
+
+    -- Dato leido alineado al byte 0 (lb/lh/lbu/lhu en direcciones no multiplo de 4)
+    ld_data <= std_logic_vector(shift_right(unsigned(rdata_b), 8 * ld_off_r));
+
+    -- Parada: el load ocupa un ciclo mas mientras llega el dato
+    ld_stall <= wl;
+
+    -- Puerto de escritura del banco de registros:
+    --   ciclo de write-back de un load -> rd del load con el dato de memoria
+    --   resto                          -> rd de la instruccion en ejecucion (ALU / PC)
+    -- Durante el write-back del load el decoder tiene una burbuja (NOP), cuya
+    -- escritura se inhibe
+    rf_waddr <= ld_rd_r when ld_wl_r = '1' else rd;
+    rf_we    <= we and not ld_wl_r;
 
     auxOp2 <= rdata2 when ena_imm = '0' else imm;
 
-    -- Calcular la dirección de salto (pc_load controla la carga del PC)  
+    -- Dato que se escribe en rd (pc_out es el PC de la instruccion en decodificacion):
+    --   jal / jalr : PC + 4 (direccion de retorno)
+    --   auipc      : PC + imm
+    --   resto      : salida de la ALU
+    pc_ext    <= resize(unsigned(pc_out), REG_WIDTH);
+    wreg_data <= std_logic_vector(pc_ext + 4)               when rdata_a(6 downto 2) = "11011" or rdata_a(6 downto 2) = "11001" else
+                 std_logic_vector(pc_ext + unsigned(imm))   when rdata_a(6 downto 2) = "00101" else
+                 wAlu;
+
+    -- Calcular la dirección de salto (pc_load controla la carga del PC)
     --   jalr       : rs1 + imm (calculado en la ALU = wAlu), con el bit 0 a '0' (especificación RV32I)
     --   jal/branch : PC + imm
     pc_target <= wAlu(ADDR_WIDTH - 1 downto 1) & '0' when rdata_a(6 downto 2) = "11001" else
@@ -117,13 +168,13 @@ begin
         rdata1    => rdata1,
         raddr2    => rs2,
         rdata2    => rdata2,
-        waddr     => rd,
-        we        => we,
-        wl        => wl,
-        be_l      => be_l,
-        sign_l    => sign_l,
-        wreg      => wAlu,
-        wdata     => rdata_b
+        waddr     => rf_waddr,
+        we        => rf_we,
+        wl        => ld_wl_r,      -- el dato del load se escribe un ciclo despues
+        be_l      => ld_be_r,
+        sign_l    => ld_sign_r,
+        wreg      => wreg_data,
+        wdata     => ld_data
     );
 
     -- DECODER

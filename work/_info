@@ -75,7 +75,7 @@ Z11 w1795024569
 Z12 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
 Z13 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
 Z14 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
-!i122 311
+!i122 327
 Z15 dC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE
 Z16 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd
 Z17 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd
@@ -85,9 +85,9 @@ VW8V^JRee9>7[::]iIWMEg3
 !s100 Fa;^dW_M[UjBeF6zbnUnU0
 Z18 OL;C;2024.1;79
 33
-Z19 !s110 1795132584
+Z19 !s110 1795175113
 !i10b 1
-Z20 !s108 1795132584.000000
+Z20 !s108 1795175113.000000
 Z21 !s90 -reportprogress|300|-work|work|-2008|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd|
 Z22 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/alu.vhd|
 !i113 0
@@ -98,7 +98,7 @@ R12
 R13
 R14
 Z25 DEx4 work 3 alu 0 22 W8V^JRee9>7[::]iIWMEg3
-!i122 311
+!i122 327
 l23
 L22 80
 VCgeeVT8`jb`l?emXL[hJi0
@@ -118,7 +118,7 @@ Z26 w1795128660
 R12
 R13
 R14
-!i122 318
+!i122 334
 R15
 Z27 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd
 Z28 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd
@@ -128,9 +128,9 @@ VA21W<Hz_TDLUEXIJR4ZHV2
 !s100 Ia48@jHzGEY[giF7VF=3S0
 R18
 32
-Z29 !s110 1795132586
+Z29 !s110 1795175115
 !i10b 1
-Z30 !s108 1795132586.000000
+Z30 !s108 1795175114.000000
 Z31 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd|
 Z32 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/core.vhd|
 !i113 0
@@ -143,7 +143,7 @@ R12
 R13
 R14
 DEx4 work 4 core 0 22 A21W<Hz_TDLUEXIJR4ZHV2
-!i122 318
+!i122 334
 l41
 L30 61
 VS84jScChlMETWkhVB:F^[0
@@ -159,11 +159,11 @@ R32
 R33
 R24
 Edecexe
-Z36 w1795132536
+Z36 w1795133403
 R12
 R13
 R14
-!i122 317
+!i122 333
 R15
 Z37 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd
 Z38 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd
@@ -173,72 +173,72 @@ Vzlo2bX3Ih3V=BLS1lzKNo3
 !s100 ;RT0QY0=<IH9YdajG:?i<2
 R18
 32
-R29
+Z39 !s110 1795175114
 !i10b 1
 R30
-Z39 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd|
-Z40 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd|
+Z40 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd|
+Z41 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/DecExe.vhd|
 !i113 0
 R33
 R24
 Artl
 R25
-Z41 DEx4 work 7 decoder 0 22 GlMI6?NIdfl=9jnaOz`OW0
-Z42 DEx4 work 7 regfile 0 22 XXKfl?1=zc4X2NNeAn99d2
+Z42 DEx4 work 7 decoder 0 22 GlMI6?NIdfl=9jnaOz`OW0
+Z43 DEx4 work 7 regfile 0 22 XXKfl?1=zc4X2NNeAn99d2
 R12
 R13
 R14
 R34
-!i122 317
-l57
-L28 125
-VGRE[[GV>JJ5nz[K6zIW^>3
-!s100 W9f2mc`[7cd^H<ZHnM2T:0
+!i122 333
+l60
+L28 146
+VGIk@I9DZ>P:lDeF`?NMce1
+!s100 Lke7:I>Yf<QM<QIQhVii:1
 R18
 32
-R29
+R39
 !i10b 1
 R30
-R39
 R40
+R41
 !i113 0
 R33
 R24
 vDecExe_tb
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
-Z43 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
-Z44 !s110 1795132587
+Z44 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
+Z45 !s110 1795175116
 !i10b 1
 !s100 [0eambF[B]gGJ5[:2c_og0
 IA5LhoaD<PfH`M4JmUc^UO0
 S1
 R15
 w1795031371
-Z45 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
-Z46 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
-!i122 321
+Z46 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
+Z47 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv
+!i122 337
 L0 3 241
-Z47 VDg1SIo80bB@j0V0VzS_@n1
-Z48 OL;L;2024.1;79
+Z48 VDg1SIo80bB@j0V0VzS_@n1
+Z49 OL;L;2024.1;79
 r1
 !s85 0
 31
-Z49 !s108 1795132587.000000
-Z50 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv|
+Z50 !s108 1795175116.000000
+Z51 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv|
 !i113 0
-Z51 o-work work -sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z52 o-work work -sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
 R8
 n@dec@exe_tb
 Edecoder
-Z52 w1795132569
+Z53 w1795132569
 R12
 R13
 R14
-!i122 312
+!i122 328
 R15
-Z53 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
-Z54 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
+Z54 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
+Z55 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd
 l0
 L5 1
 VGlMI6?NIdfl=9jnaOz`OW0
@@ -248,8 +248,8 @@ R18
 R19
 !i10b 1
 R20
-Z55 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd|
-Z56 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd|
+Z56 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd|
+Z57 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/decoder.vhd|
 !i113 0
 R33
 R24
@@ -257,8 +257,8 @@ Artl
 R12
 R13
 R14
-R41
-!i122 312
+R42
+!i122 328
 l36
 L33 131
 VTH3ALYBg:8SzWjb[LP_=51
@@ -268,8 +268,8 @@ R18
 R19
 !i10b 1
 R20
-R55
 R56
+R57
 !i113 0
 R33
 R24
@@ -277,11 +277,11 @@ Pdiv_pkg
 R12
 R13
 R14
-!i122 314
-Z57 w1795028967
+!i122 330
+Z58 w1795028967
 R15
-Z58 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
-Z59 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
+Z59 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
+Z60 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd
 l0
 L60 12
 V7XM_X:RifX[P9ABbCN_bC0
@@ -289,31 +289,31 @@ V7XM_X:RifX[P9ABbCN_bC0
 R18
 32
 b1
-Z60 !s110 1795132585
+R19
 !i10b 1
-Z61 !s108 1795132585.000000
-Z62 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd|
-Z63 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd|
+R20
+Z61 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd|
+Z62 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/divisor.vhd|
 !i113 0
 R33
 R24
 Bbody
-Z64 DPx4 work 7 div_pkg 0 22 7XM_X:RifX[P9ABbCN_bC0
+Z63 DPx4 work 7 div_pkg 0 22 7XM_X:RifX[P9ABbCN_bC0
 R12
 R13
 R14
-!i122 314
+!i122 330
 l0
 L73 38
 VC0HdjY3IKhAhYfk_F^W3c0
 !s100 d`=^nXZ2KNcTEEmWlP:K52
 R18
 32
-R60
+R19
 !i10b 1
+R20
 R61
 R62
-R63
 !i113 0
 R33
 R24
@@ -341,25 +341,25 @@ R18
 R33
 R24
 Efetch
-Z65 w1794215953
+Z64 w1794215953
 R12
 R13
 R14
-!i122 315
+!i122 331
 R15
-Z66 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
-Z67 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
+Z65 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
+Z66 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd
 l0
 L5 1
 VYhoXB>YU``GH6Tn:J<eSV0
 !s100 iSDi]ND622QGTMHjVj=612
 R18
 32
-R60
+R39
 !i10b 1
-R61
-Z68 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd|
-Z69 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd|
+R30
+Z67 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd|
+Z68 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/fetch.vhd|
 !i113 0
 R33
 R24
@@ -368,41 +368,41 @@ R12
 R13
 R14
 R35
-!i122 315
+!i122 331
 l22
 L18 25
 VS>THVG6YlX1OOe9V5WF@T0
 !s100 35k][<j=>?e9zGeo@WXPd0
 R18
 32
-R60
+R39
 !i10b 1
-R61
+R30
+R67
 R68
-R69
 !i113 0
 R33
 R24
 Ememory
-Z70 w1795127104
+Z69 w1795127104
 R12
 R13
 R14
-!i122 316
+!i122 332
 R15
-Z71 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
-Z72 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
+Z70 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
+Z71 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd
 l0
 L5 1
 VdSKFGb6:KM31f:70lQDC@0
 !s100 VYZ[Lg]Pa<T2IA5c@d>M62
 R18
 32
-R60
+R39
 !i10b 1
-R61
-Z73 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd|
-Z74 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd|
+R30
+Z72 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd|
+Z73 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/memory.vhd|
 !i113 0
 R33
 R24
@@ -411,41 +411,41 @@ R12
 R13
 R14
 DEx4 work 6 memory 0 22 dSKFGb6:KM31f:70lQDC@0
-!i122 316
+!i122 332
 l51
 L31 63
 V3I@VZ8QmoRLT0ERPJJ95j1
 !s100 UBEj1eP_j_=ZfV5Pg7fLS1
 R18
 32
-R60
+R39
 !i10b 1
-R61
+R30
+R72
 R73
-R74
 !i113 0
 R33
 R24
 Eregfile
-Z75 w1795116507
+Z74 w1795116507
 R12
 R13
 R14
-!i122 313
+!i122 329
 R15
-Z76 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
-Z77 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
+Z75 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
+Z76 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd
 l0
 L5 1
 VXXKfl?1=zc4X2NNeAn99d2
 !s100 0dm:hAXj1BgjNWdo7hzUo0
 R18
 32
-R60
+R19
 !i10b 1
-R61
-Z78 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd|
-Z79 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd|
+R20
+Z77 !s90 -reportprogress|300|-work|work|-2002|-explicit|-vopt|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd|
+Z78 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/HDL/regFile.vhd|
 !i113 0
 R33
 R24
@@ -453,158 +453,158 @@ Artl
 R12
 R13
 R14
-R42
-!i122 313
+R43
+!i122 329
 l36
 L33 56
 Vi]a]He5Ci[3BQlGQoM3G=1
 !s100 PDB1[fBnc^NGYBdZlE4]60
 R18
 32
-R60
+R19
 !i10b 1
-R61
+R20
+R77
 R78
-R79
 !i113 0
 R33
 R24
 Eriscv_div
-R57
-R64
+R58
+R63
 R12
 R13
 R14
-!i122 314
+!i122 330
 R15
-R58
 R59
+R60
 l0
 L120 1
 VfV8dN?bgSHNK<[F4nL4FP2
 !s100 STOKIR_1><i;IQA7Ln`h93
 R18
 32
-R60
+R39
 !i10b 1
+R20
 R61
 R62
-R63
 !i113 0
 R33
 R24
 Asegmentada
-R64
+R63
 R12
 R13
 R14
-Z80 DEx4 work 9 riscv_div 0 22 fV8dN?bgSHNK<[F4nL4FP2
-!i122 314
+Z79 DEx4 work 9 riscv_div 0 22 fV8dN?bgSHNK<[F4nL4FP2
+!i122 330
 l209
 L203 28
 VfZE>S>oU<_<Y4LO00_bSG1
 !s100 <K>`ACM=Y?S_ARLJokoZd2
 R18
 32
-R60
+R39
 !i10b 1
+R20
 R61
 R62
-R63
 !i113 0
 R33
 R24
 Aparalela
-R64
+R63
 R12
 R13
 R14
-R80
-!i122 314
+R79
+!i122 330
 l186
 L182 17
 V4[88o>8Tek?6A?o<NDkom0
 !s100 IDViOcTk;kC=e_QNQPOK^3
 R18
 32
-R60
+R39
 !i10b 1
+R20
 R61
 R62
-R63
 !i113 0
 R33
 R24
 Aserie
-R64
+R63
 R12
 R13
 R14
-R80
-!i122 314
+R79
+!i122 330
 l143
 L135 43
 V_kQdW>9XMbAGe:ADS>0k`2
 !s100 o>:=XZ>Kl?]mLoV[NL[A82
 R18
 32
-R60
+R39
 !i10b 1
+R20
 R61
 R62
-R63
 !i113 0
 R33
 R24
 vtb_alu
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
-R43
+R44
 R29
 !i10b 1
 !s100 B26GkW`4enh:`doLkVF4S3
 IoQ;FaTa^Maol1fhm;Hg?;0
 S1
 R15
-Z81 w1795043890
+Z80 w1795043890
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv
-!i122 319
+!i122 335
 L0 3 99
-R47
 R48
+R49
 r1
 !s85 0
 31
-R30
+Z81 !s108 1795175115.000000
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_alu.sv|
 !i113 0
-R51
+R52
 R8
 vtb_AluMemoryRegFileDec
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv
-R43
-Z82 !s110 1795132588
+R44
+Z82 !s110 1795175117
 !i10b 1
-!s100 DBOcHEom`_ENHQz[8G2;o0
-IY`Cc9bLhC1Ha]lOP5LcSE3
+!s100 Y1DW4HDJkYz4Id^Q1TXeT1
+IX38GH7XYJCjen=eYD>nED1
 S1
 R15
-w1795131744
+w1795133550
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv
-!i122 325
-L0 21 546
-R47
+!i122 341
+L0 27 604
 R48
+R49
 r1
 !s85 0
 31
-Z83 !s108 1795132588.000000
+R50
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_AluMemoryRegFileDec.sv|
 !i113 0
-R51
+R52
 R8
 ntb_@alu@memory@reg@file@dec
 vtb_DecExe
@@ -613,52 +613,52 @@ DXx6 sv_std 3 std 0 22 WmjPaeP=7F5?QFXzJ>D[Q2
 !i10b 1
 !s100 CmXl=DQjbzXH`d==@>?X<2
 IhnYmYMdE1@aD`k5ZoFSK_2
-R47
+R48
 !s105 DecExe_tb_sv_unit
 S1
 R15
 w1794693477
-R45
 R46
+R47
 L0 3
 OV;L;10.4d;61
 r1
 !s85 0
 31
 !s108 1794696774.000000
-R50
+R51
 !s90 -reportprogress|300|-work|work|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/DecExe_tb.sv|
 !i113 1
-R51
+R52
 ntb_@dec@exe
 vtb_decoder
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv
-R43
 R44
+R45
 !i10b 1
 !s100 0HH^ao[nc2gNi9R[[J>231
 I7R0]bD^E?:[3UBVRolTnm2
 S1
 R15
-R81
+R80
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv
-!i122 322
+!i122 338
 L0 3 180
-R47
 R48
+R49
 r1
 !s85 0
 31
-R49
+R50
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_decoder.sv|
 !i113 0
-R51
+R52
 R8
 vtb_fetchMemory
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv
-R43
+R44
 R82
 !i10b 1
 !s100 [odX[WPzN9QVAMCWG:QW03
@@ -668,50 +668,50 @@ R15
 w1795125572
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv
-!i122 326
+!i122 342
 L0 25 255
-R47
 R48
+R49
 r1
 !s85 0
 31
-R83
+!s108 1795175117.000000
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_fetchMemory.sv|
 !i113 0
-R51
+R52
 R8
 ntb_fetch@memory
 vtb_Regfile
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv
-R43
 R44
+R45
 !i10b 1
 !s100 MTlNgY::jG2bcZh^=X>5D0
 I5IFGYAUGGUP_n2oWiIejd1
 S1
 R15
-R81
+R80
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv
-!i122 323
+!i122 339
 L0 3 172
-R47
 R48
+R49
 r1
 !s85 0
 31
-R49
+R50
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_regFile.sv|
 !i113 0
-R51
+R52
 R8
 ntb_@regfile
 vtb_top
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
-R43
 R44
+R29
 !i10b 1
 !s100 Z;Zb1fAIVV0z[JfG?K_B30
 IKiMVFfcL4oZP6TMcG7g5_3
@@ -720,23 +720,23 @@ R15
 w1793894846
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv
-!i122 320
+!i122 336
 L0 3 95
-R47
 R48
+R49
 r1
 !s85 0
 31
-R30
+R81
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_top.sv|
 !i113 0
-R51
+R52
 R8
 vtb_writeReg
 2C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv
-R43
-R82
+R44
+R45
 !i10b 1
 !s100 Sa7eYGRV`D3;]]YbeP2oY0
 IzX_Nee9QHn6W2N8295I_E3
@@ -745,17 +745,17 @@ R15
 w1795043938
 8C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv
 FC:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv
-!i122 324
+!i122 340
 L0 16 227
-R47
 R48
+R49
 r1
 !s85 0
 31
-R83
+R50
 !s107 C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv|
 !s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|C:/Users/jucho/Documents/MASTER/ARQUITECTURAS/RISC_V_ARQUITECTURE/TEST/tb_writeReg.sv|
 !i113 0
-R51
+R52
 R8
 ntb_write@reg

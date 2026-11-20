@@ -17,6 +17,7 @@
 //   FASE 6: bifurcaciones tipo B (beq, bne, blt, bge, bltu, bgeu)
 //           tomadas, no tomadas y bucle con salto hacia atras (solo TEST_JUMPS = 1)
 //   FASE 7: tipos U y J   (lui, auipc, jal, jalr) + bucle final (halt)
+//           (el jalr usa auipc para formar el destino: el codigo es reubicable)
 //           con TEST_JUMPS = 0: solo lui y auipc, ejecucion secuencial
 //   FASE 8: estado final  (banco de registros completo y memoria de datos)
 //
@@ -27,6 +28,9 @@
 // La memoria es por defecto el agente TEST/mem_agent.sv (mismo comportamiento
 // que memory.vhd + monitor y comprobaciones). Para usar la memoria RTL:
 //   vlog -sv +define+USE_RTL_MEM tb_core.sv
+//
+// El programa se carga a partir de PROG_BASE = 0x10000 (PC_RESET del core). Los
+// PC que aparecen en las tareas y en los mensajes son relativos a PROG_BASE.
 //
 // La memoria se direcciona por palabras y el core genera direcciones de byte
 // (PC + 4), por lo que el testbench conecta addr[ADDR_WIDTH-1:2] a la memoria.
@@ -40,7 +44,7 @@ module tb_core;
 
   // 1: programa completo con bifurcaciones y saltos (beq..bgeu, jal, jalr, halt)
   // 0: programa secuencial sin saltos (no se comprueban pc_load / pc_target)
-  localparam bit TEST_JUMPS = 1'b0;
+  localparam bit TEST_JUMPS = 1'b1;
 
   localparam int DECODE_TIMEOUT = 20; // ciclos maximos esperando una instruccion en el decoder
   localparam int WB_CYCLES      = 1;  // ciclos para escribir el resultado de la ALU en el banco
@@ -59,7 +63,10 @@ module tb_core;
   localparam logic [6:0] OP_AUIPC  = 7'b0010111;
 
   // Programa y datos
-  localparam int PROG_WORDS = 77;            // 0x000 .. 0x130
+  localparam int PROG_WORDS = 77;            // PROG_BASE + 0x000 .. 0x130
+  // Direccion de la primera instruccion = PC_RESET del core (0x10000). Las
+  // direcciones de las tareas (pc) son relativas a PROG_BASE
+  localparam logic [31:0] PROG_BASE = 32'h0001_0000;
   localparam logic [31:0] DATA_BASE = 32'h0000_0400;
   localparam logic [31:0] DATA_INIT = 32'hCAFE_F08A;
   localparam logic [31:0] TRAP      = {12'd1, 5'd31, 3'b000, 5'd31, OP_I}; // addi x31, x31, 1
@@ -309,8 +316,8 @@ module tb_core;
       prog['h10C>>2] = enc_j(32'd12, 5'd24);                          // jal   x24, +12
       prog['h110>>2] = TRAP;
       prog['h114>>2] = TRAP;
-      prog['h118>>2] = enc_i(32'h128, 5'd0, 3'b000, 5'd25, OP_I);     // addi  x25, x0, 0x128
-      prog['h11C>>2] = enc_i(32'd4,   5'd25, 3'b000, 5'd26, OP_JALR); // jalr  x26, 4(x25) -> 0x12C
+      prog['h118>>2] = enc_u(20'h00000, 5'd25, OP_AUIPC);              // auipc x25, 0  -> x25 = PROG_BASE + 0x118
+      prog['h11C>>2] = enc_i(32'd20,  5'd25, 3'b000, 5'd26, OP_JALR); // jalr  x26, 20(x25) -> PROG_BASE + 0x12C
       prog['h120>>2] = TRAP;
       prog['h124>>2] = TRAP;
       prog['h128>>2] = TRAP;
@@ -327,10 +334,10 @@ module tb_core;
     begin
 `ifndef USE_RTL_MEM
       // Agente: carga por backdoor (sin consumir ciclos)
-      for (int i = 0; i < PROG_WORDS; i++) u_mem.backdoor_write(i, prog[i]);
+      for (int i = 0; i < PROG_WORDS; i++) u_mem.backdoor_write((PROG_BASE >> 2) + i, prog[i]);
       u_mem.backdoor_write(DATA_BASE >> 2, DATA_INIT);
       load_en = 1'b0;
-      $display("  [LOAD] (agente) %0d instrucciones cargadas en 0x000..0x%03H", PROG_WORDS, (PROG_WORDS-1)*4);
+      $display("  [LOAD] (agente) %0d instrucciones cargadas en 0x%05H..0x%05H", PROG_WORDS, PROG_BASE, PROG_BASE + (PROG_WORDS-1)*4);
       $display("  [LOAD] (agente) Dato 0x%08H cargado en 0x%03H", DATA_INIT, DATA_BASE);
       return;
 `endif
@@ -338,7 +345,7 @@ module tb_core;
       tb_we   = 1'b1;
       for (int i = 0; i < PROG_WORDS; i++) begin
         @(negedge clk);
-        tb_addr  = i;
+        tb_addr  = (PROG_BASE >> 2) + i;
         tb_wdata = prog[i];
       end
       @(negedge clk);
@@ -347,7 +354,7 @@ module tb_core;
       @(negedge clk);
       tb_we    = 1'b0;
       load_en  = 1'b0;
-      $display("  [LOAD] %0d instrucciones cargadas en 0x000..0x%03H", PROG_WORDS, (PROG_WORDS-1)*4);
+      $display("  [LOAD] %0d instrucciones cargadas en 0x%05H..0x%05H", PROG_WORDS, PROG_BASE, PROG_BASE + (PROG_WORDS-1)*4);
       $display("  [LOAD] Dato 0x%08H cargado en 0x%03H", DATA_INIT, DATA_BASE);
     end
   endtask
@@ -486,13 +493,13 @@ module tb_core;
     begin
       wait_decode(pc, test_name, found);
       if (found) begin
-        target = pc + exp_imm;
+        target = PROG_BASE + pc + exp_imm;  // destino absoluto
         $display("[%s] PC = 0x%03H | Instr = 0x%08H | opcode = %b | imm = 0x%08H (%0d)",
                  test_name, pc, prog[pc>>2], mon_opcode, mon_imm, $signed(mon_imm));
         $display("  Registros leidos -> rs1(x%0d)=0x%08H, rs2(x%0d)=0x%08H | eq=%b, lt=%b, ltu=%b",
                  mon_rs1, mon_rdata1, mon_rs2, mon_rdata2, mon_eq, mon_lt, mon_ltu);
         $display("  Salto            -> pc_load=%b (esp %b), pc_target=0x%05H (esp 0x%05H)",
-                 mon_pc_load, exp_taken, mon_pc_target, exp_taken ? target : pc + 4);
+                 mon_pc_load, exp_taken, mon_pc_target, exp_taken ? target : PROG_BASE + pc + 4);
 
         assert (mon_opcode  === 5'b11000)   else $error("Fallo opcode en %s", test_name);
         assert (mon_rdata1  === exp_rdata1) else $error("Fallo rdata1 en %s: esp 0x%08H, obt 0x%08H", test_name, exp_rdata1, mon_rdata1);
@@ -603,7 +610,7 @@ module tb_core;
         $display("[%s] PC = 0x%03H | Instr = 0x%08H | opcode = %b | rd = x%0d | imm = 0x%08H | we = %b",
                  test_name, pc, prog[pc>>2], mon_opcode, mon_rd, mon_imm, mon_we);
         $display("  Salto            -> pc_load=%b (esp %b), pc_target=0x%05H (esp 0x%05H)",
-                 mon_pc_load, exp_jump, mon_pc_target, exp_jump ? exp_target : pc + 4);
+                 mon_pc_load, exp_jump, mon_pc_target, exp_jump ? exp_target : PROG_BASE + pc + 4);
 
         assert (mon_opcode  === exp_opcode) else $error("Fallo opcode en %s", test_name);
         assert (mon_rd      === rd)         else $error("Fallo rd en %s: esp x%0d, obt x%0d", test_name, rd, mon_rd);
@@ -634,12 +641,22 @@ module tb_core;
       repeat (10) @(posedge clk);
       #1;
       if (TEST_JUMPS) begin
-        // El procesador debe quedarse en el bucle final (jal x0, 0 en 0x130)
-        $display("  [HALT] PC fetch = 0x%05H | instr en decoder = 0x%08H", mon_pc, mon_instr);
-        assert (mon_instr === prog['h130>>2])
-          else $error("Fallo HALT: el procesador no esta en el bucle final (instr=0x%08H)", mon_instr);
-        assert (mon_pc <= 17'h00138 && mon_pc >= 17'h00130)
-          else $error("Fallo HALT: PC fuera del bucle final (PC=0x%05H)", mon_pc);
+        // El procesador debe quedarse en el bucle final (jal x0, 0 en 0x130).
+        // Cada salto tomado anula la instruccion siguiente, asi que en el decoder
+        // se alternan el halt y una burbuja (NOP): se observan dos ciclos
+        bit halt_seen;
+        halt_seen = 1'b0;
+        for (int c = 0; c < 2; c++) begin
+          $display("  [HALT] PC fetch = 0x%05H | instr en decoder = 0x%08H", mon_pc, mon_instr);
+          if (mon_instr === prog['h130>>2]) halt_seen = 1'b1;
+          else assert (mon_instr === 32'h0000_0013)
+            else $error("Fallo HALT: instruccion inesperada en el bucle final (instr=0x%08H)", mon_instr);
+          assert (mon_pc <= PROG_BASE + 'h138 && mon_pc >= PROG_BASE + 'h130)
+            else $error("Fallo HALT: PC fuera del bucle final (PC=0x%05H)", mon_pc);
+          @(posedge clk); #1;
+        end
+        assert (halt_seen)
+          else $error("Fallo HALT: el procesador no esta en el bucle final (no se ve jal x0, 0)");
       end else
         $display("  [FIN] PC fetch = 0x%05H (sin saltos el PC sigue avanzando por memoria vacia)", mon_pc);
 
@@ -754,7 +771,7 @@ module tb_core;
       $display("\n--- FASE 6: BIFURCACIONES DESACTIVADAS (TEST_JUMPS = 0) ---");
       $display("\n--- FASE 7: TIPOS U (sin saltos) ---");
       test_upper_jump('h098, "U LUI   x22, 0xABCDE", 5'b01101, 32'hABCD_E000, 32'hABCD_E000, 1'b0, 32'h0);
-      test_upper_jump('h09C, "U AUIPC x23, 0x00001", 5'b00101, 32'h0000_1000, 32'h0000_109C, 1'b0, 32'h0);
+      test_upper_jump('h09C, "U AUIPC x23, 0x00001", 5'b00101, 32'h0000_1000, PROG_BASE + 32'h109C, 1'b0, 32'h0);
       test_alu       ('h0A0, "I ADDI  x27, x0, 77",  5'b00100, 32'd0, 32'd0, 32'd77, 1'b0, 1'b1);
     end else begin
 
@@ -797,12 +814,12 @@ module tb_core;
     // =========================================================================
     $display("\n--- FASE 7: TIPOS U Y J ---");
     test_upper_jump('h104, "U LUI   x22, 0xABCDE", 5'b01101, 32'hABCD_E000, 32'hABCD_E000, 1'b0, 32'h0);
-    test_upper_jump('h108, "U AUIPC x23, 0x00001", 5'b00101, 32'h0000_1000, 32'h0000_1108, 1'b0, 32'h0);
-    test_upper_jump('h10C, "J JAL   x24, +12",     5'b11011, 32'd12,        32'h0000_0110, 1'b1, 32'h118);
-    test_alu       ('h118, "I ADDI  x25, x0, 0x128", 5'b00100, 32'd0, 32'd0, 32'h0000_0128, 1'b0, 1'b1);
-    test_upper_jump('h11C, "I JALR  x26, 4(x25)",  5'b11001, 32'd4,         32'h0000_0120, 1'b1, 32'h12C);
+    test_upper_jump('h108, "U AUIPC x23, 0x00001", 5'b00101, 32'h0000_1000, PROG_BASE + 32'h1108, 1'b0, 32'h0);
+    test_upper_jump('h10C, "J JAL   x24, +12",     5'b11011, 32'd12,        PROG_BASE + 'h110, 1'b1, PROG_BASE + 'h118);
+    test_upper_jump('h118, "U AUIPC x25, 0",       5'b00101, 32'h0,         PROG_BASE + 'h118, 1'b0, 32'h0);
+    test_upper_jump('h11C, "I JALR  x26, 20(x25)", 5'b11001, 32'd20,        PROG_BASE + 'h120, 1'b1, PROG_BASE + 'h12C);
     test_alu       ('h12C, "I ADDI  x27, x0, 77",  5'b00100, 32'd0, 32'd0, 32'd77, 1'b0, 1'b1);
-    test_upper_jump('h130, "J JAL   x0, 0 (halt)", 5'b11011, 32'd0,         32'h0,         1'b1, 32'h130);
+    test_upper_jump('h130, "J JAL   x0, 0 (halt)", 5'b11011, 32'd0,         32'h0,         1'b1, PROG_BASE + 'h130);
     end // TEST_JUMPS
 
     // =========================================================================

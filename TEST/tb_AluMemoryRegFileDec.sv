@@ -306,7 +306,8 @@ module tb_AluMemoryRegFileDec;
 
   // ---------------------------------------------------------------------------
   // Load (tipo I): direccion = rs1 + imm. El testbench hace de memoria y pone
-  // mem_data en rdata_b. Despues se comprueba el valor del registro destino.
+  // mem_data en rdata_b en el ciclo siguiente (memoria sincrona). Despues se
+// comprueba el valor del registro destino.
   // ---------------------------------------------------------------------------
   task automatic test_load(
     input logic [31:0] instruction_word,
@@ -318,7 +319,6 @@ module tb_AluMemoryRegFileDec;
     begin
       @(negedge clk);
       rdata_a = instruction_word;
-      rdata_b = mem_data;   // dato devuelto por la memoria
       #2;
 
       $display("------------------------------------------------------------------");
@@ -332,6 +332,13 @@ module tb_AluMemoryRegFileDec;
       assert (mon_we     === 1'b0)     else $error("Fallo we en %s: un load no debe escribir la salida de la ALU en registros", test_name);
       assert (mon_pc_load === 1'b0)    else $error("Fallo pc_load en %s: un load no debe saltar", test_name);
 
+      // Memoria sincrona: muestrea la direccion en este flanco y devuelve el dato
+      // durante el ciclo siguiente, en el que DecExe escribe rd (write-back del
+      // load). En ese ciclo el core entrega una burbuja (NOP) al decoder
+      @(posedge clk);
+      #1;
+      rdata_a = 32'h0000_0013;  // NOP (addi x0, x0, 0)
+      rdata_b = mem_data;       // dato devuelto por la memoria
       @(posedge clk);
       #1;
       rdata_b = 32'h0;
