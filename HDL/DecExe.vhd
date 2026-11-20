@@ -31,7 +31,16 @@ entity DecExe is
         -- Retencion: la instruccion del decoder NO se ejecuta en este ciclo y el
         -- core debe repetirla en el siguiente (division serie en curso o riesgo
         -- de datos con una division pendiente en la segmentada)
-        dec_hold  : out  std_logic
+        dec_hold  : out  std_logic;
+        -- Depuracion (solo para testbench; se pueden dejar sin conectar)
+        dbg_rdata1 : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_rdata2 : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_wAlu   : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_we     : out std_logic;
+        dbg_wl     : out std_logic;
+        dbg_we_mem : out std_logic;
+        dbg_be_mem : out std_logic_vector(ALU_DECOD-1 downto 0);
+        dbg_regs   : out std_logic_vector(2**ADDR_REG * REG_WIDTH - 1 downto 0)
     );
 end entity DecExe;
 
@@ -219,6 +228,15 @@ begin
 
     dec_hold <= hold;
 
+    -- Salidas de depuracion
+    dbg_rdata1 <= rdata1;
+    dbg_rdata2 <= rdata2;
+    dbg_wAlu   <= wAlu;
+    dbg_we     <= we;
+    dbg_wl     <= wl;
+    dbg_we_mem <= aux_we_b;
+    dbg_be_mem <= aux_be_b;
+
     -- =========================================================================
     -- UNIDAD DE DIVISION (div, divu, rem, remu)
     -- div / rem: se pasan a RISCV_Div los valores absolutos y despues se corrige
@@ -398,7 +416,8 @@ begin
         wdata     => ld_data,
         we2       => wdiv_en,      -- resultado de la division
         waddr2    => wdiv_addr,
-        wdata2    => wdiv_data
+        wdata2    => wdiv_data,
+        dbg_regs  => dbg_regs
     );
 
     -- DECODER

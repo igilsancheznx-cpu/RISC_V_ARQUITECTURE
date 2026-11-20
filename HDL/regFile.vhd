@@ -31,7 +31,9 @@ entity regFile is
         -- otra instruccion, que puede estar usando el puerto principal
         we2       : in  std_logic := '0';
         waddr2    : in  std_logic_vector(ADDR_REG - 1 downto 0)  := (others => '0');
-        wdata2    : in  std_logic_vector(REG_WIDTH - 1 downto 0) := (others => '0')
+        wdata2    : in  std_logic_vector(REG_WIDTH - 1 downto 0) := (others => '0');
+        -- Depuracion: contenido de todo el banco (x0 en los bits bajos). Solo para testbench
+        dbg_regs  : out std_logic_vector(2**ADDR_REG * REG_WIDTH - 1 downto 0)
     );
 end entity regFile;
 
@@ -40,6 +42,11 @@ architecture rtl of regFile is
     type reg_array is array (0 to 2**ADDR_REG - 1) of std_logic_vector(REG_WIDTH - 1 downto 0);
     signal regs : reg_array := (others => (others => '0'));
 begin
+
+    -- Salida de depuracion: registro k en dbg_regs((k+1)*REG_WIDTH-1 downto k*REG_WIDTH)
+    gen_dbg: for k in 0 to 2**ADDR_REG - 1 generate
+        dbg_regs((k + 1) * REG_WIDTH - 1 downto k * REG_WIDTH) <= regs(k);
+    end generate;
 
     -- Lectura asincrona: El registro 0 SIEMPRE devuelve 0
     rdata1 <= (others => '0') when unsigned(raddr1) = 0 else 
