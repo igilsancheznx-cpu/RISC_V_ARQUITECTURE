@@ -24,7 +24,16 @@ entity DecExe is
         pc_target : out  std_logic_vector(ADDR_WIDTH - 1 downto 0);
         -- Load en ejecucion: el core debe parar un ciclo (fetch mantiene el PC y
         -- la instruccion siguiente se anula) mientras el dato llega de memoria
-        ld_stall  : out  std_logic
+        ld_stall  : out  std_logic;
+        -- Depuracion (solo para testbench; se pueden dejar sin conectar)
+        dbg_rdata1 : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_rdata2 : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_wAlu   : out std_logic_vector(REG_WIDTH-1 downto 0);
+        dbg_we     : out std_logic;
+        dbg_wl     : out std_logic;
+        dbg_we_mem : out std_logic;
+        dbg_be_mem : out std_logic_vector(ALU_DECOD-1 downto 0);
+        dbg_regs   : out std_logic_vector(2**ADDR_REG * REG_WIDTH - 1 downto 0)
     );
 end entity DecExe;
 
@@ -125,6 +134,15 @@ begin
     rf_waddr <= ld_rd_r when ld_wl_r = '1' else rd;
     rf_we    <= we and not ld_wl_r;
 
+    -- Salidas de depuracion
+    dbg_rdata1 <= rdata1;
+    dbg_rdata2 <= rdata2;
+    dbg_wAlu   <= wAlu;
+    dbg_we     <= we;
+    dbg_wl     <= wl;
+    dbg_we_mem <= aux_we_b;
+    dbg_be_mem <= aux_be_b;
+
     auxOp2 <= rdata2 when ena_imm = '0' else imm;
 
     -- Dato que se escribe en rd (pc_out es el PC de la instruccion en decodificacion):
@@ -174,7 +192,8 @@ begin
         be_l      => ld_be_r,
         sign_l    => ld_sign_r,
         wreg      => wreg_data,
-        wdata     => ld_data
+        wdata     => ld_data,
+        dbg_regs  => dbg_regs
     );
 
     -- DECODER

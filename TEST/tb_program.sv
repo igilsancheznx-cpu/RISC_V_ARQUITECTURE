@@ -95,23 +95,22 @@ module tb_program;
   assign mem_addr_a = {2'b00, addr_a[ADDR_WIDTH-1:2]};
   assign mem_addr_b = {2'b00, addr_b[ADDR_WIDTH-1:2]};
 
-  // Monitorizacion jerarquica de DecExe
-  wire [MEM_WIDTH-1:0]  mon_rdata1    = dut.U1.rdata1;
-  wire [MEM_WIDTH-1:0]  mon_rdata2    = dut.U1.rdata2;
-  wire [MEM_WIDTH-1:0]  mon_wAlu      = dut.U1.wAlu;
-  wire                  mon_we        = dut.U1.we;          // escritura ALU -> banco de registros
-  wire                  mon_wl        = dut.U1.wl;          // escritura memoria -> banco (LOAD)
-  wire                  mon_we_mem    = dut.U1.aux_we_b;    // escritura en memoria (decoder)
-  wire [NUM_BYTES-1:0]  mon_be_mem    = dut.U1.aux_be_b;    // byte enable de memoria (decoder)
-  wire                  mon_pc_load   = dut.U1.pc_load;
-  wire [ADDR_WIDTH-1:0] mon_pc_target = dut.U1.pc_target;
+  // Monitorizacion de DecExe a traves de los puertos de depuracion dbg_* del core.
+  // (El simulador de Vivado no permite referencias jerarquicas desde SystemVerilog
+  //  a senales internas de VHDL como dut.U1.rdata1, por eso se sacan por puertos)
+  wire [MEM_WIDTH-1:0]  mon_rdata1;
+  wire [MEM_WIDTH-1:0]  mon_rdata2;
+  wire [MEM_WIDTH-1:0]  mon_wAlu;
+  wire                  mon_we;          // escritura ALU -> banco de registros
+  wire                  mon_wl;          // escritura memoria -> banco (LOAD)
+  wire                  mon_we_mem;      // escritura en memoria (decoder)
+  wire [NUM_BYTES-1:0]  mon_be_mem;      // byte enable de memoria (decoder)
+  wire                  mon_pc_load;
+  wire [ADDR_WIDTH-1:0] mon_pc_target;
+  wire [32*MEM_WIDTH-1:0] mon_regs;      // banco de registros completo (x0 en los bits bajos)
 
-  // Instruccion valida en el decoder ('0' = burbuja). core_aux no anula instrucciones
-`ifdef USE_CORE_AUX
-  wire                  mon_valid     = 1'b1;
-`else
-  wire                  mon_valid     = dut.instr_valid;
-`endif
+  // Instruccion valida en el decoder ('0' = burbuja)
+  wire                  mon_valid;
 
   // PC de la instruccion presente en rdata_a: la memoria es sincrona, asi que
   // es la direccion que muestreo en el ultimo flanco de subida
@@ -142,7 +141,19 @@ module tb_program;
     .addr_b  (addr_b),
     .wdata_b (wdata_b),
     .we_b    (we_b),
-    .be_b    (be_b)
+    .be_b    (be_b),
+    // Depuracion
+    .dbg_instr_valid (mon_valid),
+    .dbg_rdata1      (mon_rdata1),
+    .dbg_rdata2      (mon_rdata2),
+    .dbg_wAlu        (mon_wAlu),
+    .dbg_we          (mon_we),
+    .dbg_wl          (mon_wl),
+    .dbg_we_mem      (mon_we_mem),
+    .dbg_be_mem      (mon_be_mem),
+    .dbg_pc_load     (mon_pc_load),
+    .dbg_pc_target   (mon_pc_target),
+    .dbg_regs        (mon_regs)
   );
 
   mem_agent #(
@@ -558,8 +569,11 @@ module tb_program;
   endtask
 
   function automatic logic [31:0] dut_reg(input logic [4:0] r);
-    return dut.U1.U0.regs[r];
+    return mon_regs[r*MEM_WIDTH +: MEM_WIDTH];
   endfunction
+
+  // Ciclo actual (0 = primer ciclo tras soltar el reset). Ver "Medida de ciclos" mas abajo
+  int cyc_cnt = 0;
 
   // Loads pendientes de escribir en rd (no cuentan como escritura inesperada)
   int pend_load [0:31];
@@ -606,7 +620,7 @@ module tb_program;
   //                   (registro escrito, memoria escrita o salto resuelto)
   //   burbujas      : ciclos anulados tras la instruccion (salto tomado)
   // ---------------------------------------------------------------------------
-  int cyc_cnt = 0;
+  // (cyc_cnt se declara mas arriba, antes de check_load / check_store)
   int dec_fetch_cyc = 0;
   always @(posedge clk) begin
     dec_fetch_cyc <= cyc_cnt;

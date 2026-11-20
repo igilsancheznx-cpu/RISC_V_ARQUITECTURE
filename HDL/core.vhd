@@ -24,7 +24,19 @@ port(
     addr_b  :  out std_logic_vector(ADDR_WIDTH-1 downto 0); 
     wdata_b :  out std_logic_vector(MEM_WIDTH - 1 downto 0);    
     we_b    :  out std_logic; 
-    be_b    :  out std_logic_vector(NUM_BYTES-1 downto 0) 
+    be_b    :  out std_logic_vector(NUM_BYTES-1 downto 0);
+    -- Depuracion (solo para testbench; se pueden dejar sin conectar)
+    dbg_instr_valid : out std_logic;
+    dbg_rdata1      : out std_logic_vector(MEM_WIDTH-1 downto 0);
+    dbg_rdata2      : out std_logic_vector(MEM_WIDTH-1 downto 0);
+    dbg_wAlu        : out std_logic_vector(MEM_WIDTH-1 downto 0);
+    dbg_we          : out std_logic;
+    dbg_wl          : out std_logic;
+    dbg_we_mem      : out std_logic;
+    dbg_be_mem      : out std_logic_vector(NUM_BYTES-1 downto 0);
+    dbg_pc_load     : out std_logic;
+    dbg_pc_target   : out std_logic_vector(ADDR_WIDTH-1 downto 0);
+    dbg_regs        : out std_logic_vector(2**ADDR_REG * MEM_WIDTH - 1 downto 0)
 );
 end core;
 
@@ -81,6 +93,11 @@ begin
 
     instr_dec <= rdata_a when instr_valid = '1' else NOP;
 
+    -- Salidas de depuracion
+    dbg_instr_valid <= instr_valid;
+    dbg_pc_load     <= pc_load;
+    dbg_pc_target   <= pc_target;
+
     U0: entity work.fetch(rtl)
     generic map(
         ADDR_WIDTH  => ADDR_WIDTH,
@@ -114,7 +131,15 @@ begin
        pc_out    => pc_instr,                -- PC de la instruccion (no el del fetch)
        pc_load   => pc_load,
        pc_target => pc_target,
-       ld_stall  => ld_stall
+       ld_stall  => ld_stall,
+       dbg_rdata1 => dbg_rdata1,
+       dbg_rdata2 => dbg_rdata2,
+       dbg_wAlu   => dbg_wAlu,
+       dbg_we     => dbg_we,
+       dbg_wl     => dbg_wl,
+       dbg_we_mem => dbg_we_mem,
+       dbg_be_mem => dbg_be_mem,
+       dbg_regs   => dbg_regs
     );
 
 end estructural;

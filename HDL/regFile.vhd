@@ -25,7 +25,9 @@ entity regFile is
         wl        : in  std_logic; -- Write back from memory 
         be_l      : in  std_logic_vector(3 downto 0); -- Byte enable for write back
         sign_l    : in  std_logic; -- Load con signo (lb, lh): '1' extiende signo, '0' extiende con ceros
-        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0)  -- Write from MEMORY
+        wdata     : in  std_logic_vector(REG_WIDTH - 1 downto 0); -- Write from MEMORY
+        -- Depuracion: contenido de todo el banco (x0 en los bits bajos). Solo para testbench
+        dbg_regs  : out std_logic_vector(2**ADDR_REG * REG_WIDTH - 1 downto 0)
     );
 end entity regFile;
 
@@ -34,6 +36,11 @@ architecture rtl of regFile is
     type reg_array is array (0 to 2**ADDR_REG - 1) of std_logic_vector(REG_WIDTH - 1 downto 0);
     signal regs : reg_array := (others => (others => '0'));
 begin
+
+    -- Salida de depuracion: registro k en dbg_regs((k+1)*REG_WIDTH-1 downto k*REG_WIDTH)
+    gen_dbg: for k in 0 to 2**ADDR_REG - 1 generate
+        dbg_regs((k + 1) * REG_WIDTH - 1 downto k * REG_WIDTH) <= regs(k);
+    end generate;
 
     -- Lectura asincrona: El registro 0 SIEMPRE devuelve 0
     rdata1 <= (others => '0') when unsigned(raddr1) = 0 else 
